@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+    <Asset Type="System.Collections.Generic.Dictionary[System.String, System.String]">
+        <Item>
+            <Key>Place</Key>
+            <Value>Place</Value>
+        </Item>
+        <Item>
+            <Key>Drop</Key>
+            <Value>Drop</Value>
+        </Item>
+        <Item>
+            <Key>TimeHour</Key>
+            <Value>h:mm tt</Value>
+        </Item>
+        <Item>
+            <Key>TimeDay</Key>
+            <Value>dddd d MMM</Value>
+        </Item>
+        <Item>
+            <Key>Inventory</Key>
+            <Value>Inventory</Value>
+        </Item>
+        <Item>
+            <Key>Tools</Key>
+            <Value>Tools</Value>
+        </Item>
+    </Asset>
+</XnaContent>

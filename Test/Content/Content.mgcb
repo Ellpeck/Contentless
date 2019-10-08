@@ -1,0 +1,30 @@
+
+#----------------------------- Global Properties ----------------------------#
+
+/outputDir:bin
+/intermediateDir:obj
+/platform:DesktopGL
+/config:
+/profile:Reach
+/compress:False
+
+#-------------------------------- References --------------------------------#
+
+
+#---------------------------------- Content ---------------------------------#
+
+#begin Textures/Inside.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/build:Textures/Inside.png
+
+#begin Locale/Interface.xml
+/importer:XmlImporter
+/processor:PassThroughProcessor
+/build:Locale/Interface.xml
+
+#begin Textures/Icons.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/build:Textures/Icons.png
+
