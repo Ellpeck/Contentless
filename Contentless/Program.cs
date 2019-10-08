@@ -9,14 +9,21 @@ namespace Contentless {
     public static class Program {
 
         private static readonly ImporterInfo[] Importers = GetContentImporters().ToArray();
-        private static readonly string[] ExcludedFolders = {"bin", "obj"};
+        private static readonly string[] ExcludedFolders = {"bin/", "obj/"};
 
         public static void Main(string[] args) {
+            if (args.Length != 1) {
+                Console.WriteLine("Please specify the location of the content file you want to use");
+                return;
+            }
+            
             var contentFile = new FileInfo(Path.Combine(Environment.CurrentDirectory, args[0]));
             if (!contentFile.Exists) {
                 Console.WriteLine($"Unable to find content file {contentFile}");
                 return;
             }
+            
+            Console.WriteLine($"Using content file {contentFile}");
             var content = ReadContent(contentFile);
 
             var changed = false;
@@ -24,11 +31,10 @@ namespace Contentless {
                 // is the file the content file?
                 if (file.Name == contentFile.Name)
                     continue;
-                var relative = Path.GetRelativePath(contentFile.Directory.FullName, file.FullName).Replace("\\", "/");
+                var relative = GetRelativePath(contentFile.Directory.FullName, file.FullName);
 
                 // is the file in an excluded directory?
-                var dirName = file.DirectoryName.Replace("\\", "/");
-                if (ExcludedFolders.Any(e => dirName.Contains(e))) {
+                if (ExcludedFolders.Any(e => relative.Contains(e))) {
                     continue;
                 }
 
@@ -105,6 +111,15 @@ namespace Contentless {
             content.Add("");
 
             Console.WriteLine($"Adding file {relative} with importer {importer.Type.Name} and processor {importer.Importer.DefaultProcessor}");
+        }
+
+        private static string GetRelativePath(string relativeTo, string path) {
+            relativeTo = relativeTo.Replace("\\", "/");
+            path = path.Replace("\\", "/");
+            
+            if (!relativeTo.EndsWith("/"))
+                relativeTo += '/';
+            return path.Replace(relativeTo, "");
         }
 
         private class ImporterInfo {
