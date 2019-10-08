@@ -65,3 +65,8 @@
 /processor:TiledMapTilesetProcessor
 /build:Tiled/Tileset.tsx
 
+#begin Contentless.json
+/importer:TexturePackerJsonImporter
+/processor:TexturePackerProcessor
+/build:Contentless.json
+
