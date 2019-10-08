@@ -69,13 +69,15 @@ namespace Contentless {
 
                 // is the file in an excluded directory?
                 if (excluded.Any(e => e.IsMatch(relative))) {
-                    Console.WriteLine($"Skipping excluded file {relative}");
+                    if (config.LogSkipped)
+                        Console.WriteLine($"Skipping excluded file {relative}");
                     continue;
                 }
 
                 // is the file already in the content file?
                 if (HasEntry(content, relative)) {
-                    Console.WriteLine($"Skipping file {relative} as it is already part of the content file");
+                    if (config.LogSkipped)
+                        Console.WriteLine($"Skipping file {relative} as it is already part of the content file");
                     continue;
                 }
 

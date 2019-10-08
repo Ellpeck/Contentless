@@ -3,5 +3,6 @@
         "obj/",
         "bin/",
         "Ex*.png"
-    ]
+    ],
+    "logSkipped": false
 }
