@@ -8,7 +8,6 @@ using Microsoft.Xna.Framework.Content.Pipeline;
 namespace Contentless {
     public static class Program {
 
-        private static readonly ImporterInfo[] Importers = GetContentImporters().ToArray();
         private static readonly string[] ExcludedFolders = {"bin/", "obj/"};
 
         public static void Main(string[] args) {
@@ -16,22 +15,40 @@ namespace Contentless {
                 Console.WriteLine("Please specify the location of the content file you want to use");
                 return;
             }
-            
+
             var contentFile = new FileInfo(Path.Combine(Environment.CurrentDirectory, args[0]));
             if (!contentFile.Exists) {
                 Console.WriteLine($"Unable to find content file {contentFile}");
                 return;
             }
-            
+
             Console.WriteLine($"Using content file {contentFile}");
             var content = ReadContent(contentFile);
+
+            // load any references to be able to include custom content types as well
+            foreach (var line in content) {
+                if (!line.StartsWith("/reference:"))
+                    continue;
+                var reference = line.Substring(11);
+                var refPath = Path.Combine(contentFile.DirectoryName, reference);
+                try {
+                    Assembly.LoadFrom(refPath);
+                    Console.WriteLine($"Using reference {refPath}");
+                } catch (Exception) {
+                    Console.WriteLine($"Couldn't load reference {refPath}, file types that require this reference won't be added automatically");
+                }
+            }
+
+            // load content importers
+            var importers = GetContentImporters().ToArray();
+            Console.WriteLine($"Found possible importer types {string.Join(", ", importers.AsEnumerable())}");
 
             var changed = false;
             foreach (var file in contentFile.Directory.EnumerateFiles("*", SearchOption.AllDirectories)) {
                 // is the file the content file?
                 if (file.Name == contentFile.Name)
                     continue;
-                var relative = GetRelativePath(contentFile.Directory.FullName, file.FullName);
+                var relative = GetRelativePath(contentFile.DirectoryName, file.FullName).Replace("\\", "/");
 
                 // is the file in an excluded directory?
                 if (ExcludedFolders.Any(e => relative.Contains(e))) {
@@ -44,9 +61,9 @@ namespace Contentless {
                     continue;
                 }
 
-                var importer = GetImporterFor(relative);
+                var importer = GetImporterFor(relative, importers);
                 if (importer == null) {
-                    Console.WriteLine($"No importer found for file {relative}, please add the file manually");
+                    Console.WriteLine($"No importer found for file {relative}");
                     continue;
                 }
 
@@ -75,9 +92,9 @@ namespace Contentless {
             }
         }
 
-        private static ImporterInfo GetImporterFor(string file) {
+        private static ImporterInfo GetImporterFor(string file, ImporterInfo[] importers) {
             var extension = Path.GetExtension(file);
-            foreach (var importer in Importers) {
+            foreach (var importer in importers) {
                 if (importer.Importer.FileExtensions.Contains(extension))
                     return importer;
             }
@@ -114,25 +131,11 @@ namespace Contentless {
         }
 
         private static string GetRelativePath(string relativeTo, string path) {
-            relativeTo = relativeTo.Replace("\\", "/");
-            path = path.Replace("\\", "/");
-            
-            if (!relativeTo.EndsWith("/"))
-                relativeTo += '/';
+            if (!relativeTo.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                relativeTo += Path.DirectorySeparatorChar;
             return path.Replace(relativeTo, "");
         }
 
-        private class ImporterInfo {
-
-            public readonly ContentImporterAttribute Importer;
-            public readonly Type Type;
-
-            public ImporterInfo(ContentImporterAttribute importer, Type type) {
-                this.Importer = importer;
-                this.Type = type;
-            }
-
-        }
-
     }
+
 }
