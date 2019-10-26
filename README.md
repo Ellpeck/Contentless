@@ -10,10 +10,22 @@ Next, add Contentless to your build process by adding the following task to your
     <Exec Command="..\..\Contentless\Build\Contentless.exe Content/Content.mgcb" />
 </Target>
 ```
-Contentless will now automatically add any content files from your `Content` directory and subdirectories (excluding `bin` and `obj`) to your `Content.mgcb` file if they haven't already been added either manually or by Contentless. No existing items' configurations will be overridden, so you can still use the Content Pipeline tool to modify any settings as well.
+Contentless will now automatically add any content files from your `Content` directory and subdirectories to your `Content.mgcb` file if they haven't already been added either manually or by Contentless. No existing items' configurations will be overridden, so you can still use the Content Pipeline tool to modify any settings as well.
+
+# Configuring
+To add a configuration file to Contentless, simply create a file named `Contentless.json` in the same directory as your `Content.mgcb` file. You can use the config to change several options. For reference, here is a configuration file with the default values that are used if no config is supplied:
+```json
+{
+    "exclude": [
+        "obj/",
+        "bin/"
+    ],
+    "logSkipped": true
+}
+```
 
 # What it does
-When running Contentless and supplying the location of a MonoGame Content Pipeline project (`Content.mgcb`), it scans all of the files in the project's directory as well as its subdirectories (excluding `bin` and `obj`). For each file, it checks if the `Content.mgcb` file already contains any references to that file. If no references are found, then a new reference to the file is added. 
+When running Contentless and supplying the location of a MonoGame Content Pipeline project (`Content.mgcb`), it scans all of the files in the project's directory as well as its subdirectories. For each file, it checks if the `Content.mgcb` file already contains any references to that file. If no references are found, then a new reference to the file is added. 
 
 Contentless figures out which importer and processor to register for any given file by generating a list of all of the importers and processors that are available, both inside of MonoGame, and inside of References added to the `Content.mgcb` file. This process is similar to what occurs when adding an existing file through MonoGame's Content Pipeline tool. If Contentless sets the wrong importer or processor for any file, the user can simply open `Content.mgcb` in MonoGame's Content Pipeline tool and edit it manually. 
 

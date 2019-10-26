@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.Xna.Framework.Content.Pipeline;
+using Newtonsoft.Json;
 
 namespace Contentless {
     public static class Program {
-
-        private static readonly string[] ExcludedFolders = {"bin/", "obj/"};
 
         public static void Main(string[] args) {
             if (args.Length != 1) {
@@ -25,6 +25,23 @@ namespace Contentless {
             Console.WriteLine($"Using content file {contentFile}");
             var content = ReadContent(contentFile);
 
+            // load config
+            var config = new Config();
+            var configFile = new FileInfo(Path.Combine(contentFile.DirectoryName, "Contentless.json"));
+            if (configFile.Exists) {
+                using (var stream = configFile.OpenText()) {
+                    try {
+                        config = JsonConvert.DeserializeObject<Config>(stream.ReadToEnd());
+                        Console.WriteLine($"Using config from {configFile}");
+                    } catch (Exception e) {
+                        Console.WriteLine($"Error loading config from {configFile}: {e}");
+                    }
+                }
+            } else {
+                Console.WriteLine("Using default config");
+            }
+            var excluded = Array.ConvertAll(config.ExcludedFiles, s => new Regex(s.Replace(".", "[.]").Replace("*", ".*").Replace("?", ".")));
+
             // load any references to be able to include custom content types as well
             foreach (var line in content) {
                 if (!line.StartsWith("/reference:"))
@@ -34,8 +51,8 @@ namespace Contentless {
                 try {
                     Assembly.LoadFrom(refPath);
                     Console.WriteLine($"Using reference {refPath}");
-                } catch (Exception) {
-                    Console.WriteLine($"Couldn't load reference {refPath}, file types that require this reference won't be added automatically");
+                } catch (Exception e) {
+                    Console.WriteLine($"Error loading reference {refPath}: {e}");
                 }
             }
 
@@ -45,19 +62,22 @@ namespace Contentless {
 
             var changed = false;
             foreach (var file in contentFile.Directory.EnumerateFiles("*", SearchOption.AllDirectories)) {
-                // is the file the content file?
-                if (file.Name == contentFile.Name)
+                // is the file the content or config file?
+                if (file.Name == contentFile.Name || file.Name == configFile.Name)
                     continue;
                 var relative = GetRelativePath(contentFile.DirectoryName, file.FullName).Replace("\\", "/");
 
                 // is the file in an excluded directory?
-                if (ExcludedFolders.Any(e => relative.Contains(e))) {
+                if (excluded.Any(e => e.IsMatch(relative))) {
+                    if (config.LogSkipped)
+                        Console.WriteLine($"Skipping excluded file {relative}");
                     continue;
                 }
 
                 // is the file already in the content file?
                 if (HasEntry(content, relative)) {
-                    Console.WriteLine($"Skipping file {relative} as it is already part of the content file");
+                    if (config.LogSkipped)
+                        Console.WriteLine($"Skipping file {relative} as it is already part of the content file");
                     continue;
                 }
 

@@ -64,4 +64,3 @@
 /importer:TiledMapTilesetImporter
 /processor:TiledMapTilesetProcessor
 /build:Tiled/Tileset.tsx
-
