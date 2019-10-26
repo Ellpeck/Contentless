@@ -6,7 +6,7 @@ Clone this repository or download its `Build` folder which contains a build of C
 
 Next, add Contentless to your build process by adding the following task to your `.csproj` file. Note that you might have to change the paths to fit your project's setup.
 ```xml
-<Target Name="BeforeBuild">
+<Target Name="Contentless" BeforeTargets="BeforeBuild">
     <Exec Command="..\..\Contentless\Build\Contentless.exe Content/Content.mgcb" />
 </Target>
 ```
