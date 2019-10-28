@@ -2,7 +2,7 @@
 A commandline tool for MonoGame that automatically handles adding assets to the Content Pipeline project so you don't have to use their interface to add every content file manually.
 
 # How to use
-Clone this repository or download its `Build` folder which contains a build of Contentless. Alternatively, you can also download a build from the [Releases](https://github.com/Ellpeck/Contentless/releases) tab. 
+Clone this repository or download a build from the [Releases](https://github.com/Ellpeck/Contentless/releases) tab. 
 
 Next, add Contentless to your build process by adding the following task to your `.csproj` file. Note that you might have to change the paths to fit your project's setup.
 ```xml
