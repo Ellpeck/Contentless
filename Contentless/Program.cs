@@ -40,7 +40,8 @@ namespace Contentless {
             } else {
                 Console.WriteLine("Using default config");
             }
-            var excluded = Array.ConvertAll(config.ExcludedFiles, s => new Regex(s.Replace(".", "[.]").Replace("*", ".*").Replace("?", ".")));
+            var excluded = config.ExcludedFiles.Select(MakeFileRegex).ToArray();
+            var overrides = config.Overrides.Select(e => (MakeFileRegex(e[0]), e[1])).ToArray();
 
             // load any references to be able to include custom content types as well
             foreach (var line in content) {
@@ -81,7 +82,23 @@ namespace Contentless {
                     continue;
                 }
 
-                var importer = GetImporterFor(relative, importers);
+                ImporterInfo importer = null;
+
+                // override importers
+                var over = GetOverrideImporterFor(relative, overrides);
+                if (over != null) {
+                    importer = Array.Find(importers, i => i.Type.Name == over);
+                    if (importer == null) {
+                        Console.WriteLine($"Override importer {over} not found for file {relative}");
+                        continue;
+                    }
+                }
+
+                // normal importers
+                if (importer == null)
+                    importer = GetImporterFor(relative, importers);
+
+                // no importer found :(
                 if (importer == null) {
                     Console.WriteLine($"No importer found for file {relative}");
                     continue;
@@ -110,6 +127,14 @@ namespace Contentless {
                         yield return new ImporterInfo(importer, type);
                 }
             }
+        }
+
+        private static string GetOverrideImporterFor(string file, (Regex, string)[] overrides) {
+            foreach (var (regex, value) in overrides) {
+                if (regex.IsMatch(file))
+                    return value;
+            }
+            return null;
         }
 
         private static ImporterInfo GetImporterFor(string file, ImporterInfo[] importers) {
@@ -154,6 +179,10 @@ namespace Contentless {
             if (!relativeTo.EndsWith(Path.DirectorySeparatorChar.ToString()))
                 relativeTo += Path.DirectorySeparatorChar;
             return path.Replace(relativeTo, "");
+        }
+
+        private static Regex MakeFileRegex(string s) {
+            return new Regex(s.Replace(".", "[.]").Replace("*", ".*").Replace("?", "."));
         }
 
     }

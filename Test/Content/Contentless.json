@@ -4,5 +4,8 @@
         "bin/",
         "Ex*.png"
     ],
-    "logSkipped": false
+    "logSkipped": false,
+    "overrides": [
+        [".json", "JsonContentImporter"]
+    ]
 }

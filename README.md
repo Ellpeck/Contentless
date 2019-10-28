@@ -13,7 +13,7 @@ Next, add Contentless to your build process by adding the following task to your
 Contentless will now automatically add any content files from your `Content` directory and subdirectories to your `Content.mgcb` file if they haven't already been added either manually or by Contentless. No existing items' configurations will be overridden, so you can still use the Content Pipeline tool to modify any settings as well.
 
 # Configuring
-To add a configuration file to Contentless, simply create a file named `Contentless.json` in the same directory as your `Content.mgcb` file. You can use the config to change several options. For reference, here is a configuration file with the default values that are used if no config is supplied:
+To add a configuration file to Contentless, simply create a file named `Contentless.json` in the same directory as your `Content.mgcb` file. You can use the config to change several options. For reference, here is a configuration file with the default values that are used if no config is supplied, along with some documentation:
 ```json5
 {
     // The list of files that should be excluded. Can use regex
@@ -23,7 +23,13 @@ To add a configuration file to Contentless, simply create a file named `Contentl
     ],
     // If any files that were skipped without errors should be logged
     // (Files that already have entries or files that were ignored)
-    "logSkipped": true
+    "logSkipped": true,
+    // The list of files that should use a different importer than the one
+    // that Contentless automatically determined. Can use regex
+    "overrides": [
+        // Entries are arrays containing the file regex and importer, e.g.
+        // [".json", "JsonImporter"]
+    ]
 }
 ```
 

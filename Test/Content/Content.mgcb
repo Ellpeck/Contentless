@@ -14,6 +14,11 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Json/Test.json
+/importer:JsonContentImporter
+/processor:JsonContentProcessor
+/build:Json/Test.json
+
 #begin Locale/Interface.xml
 /importer:XmlImporter
 /processor:PassThroughProcessor
@@ -64,8 +69,4 @@
 /importer:TiledMapTilesetImporter
 /processor:TiledMapTilesetProcessor
 /build:Tiled/Tileset.tsx
-#begin Copy/Test.json
-/importer:TexturePackerJsonImporter
-/processor:TexturePackerProcessor
-/build:Copy/Test.json
 

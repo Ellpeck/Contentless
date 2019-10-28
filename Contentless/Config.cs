@@ -9,5 +9,8 @@ namespace Contentless {
         [JsonProperty(PropertyName = "logSkipped")]
         public bool LogSkipped = true;
 
+        [JsonProperty(PropertyName = "overrides")]
+        public string[][] Overrides = { };
+
     }
 }
