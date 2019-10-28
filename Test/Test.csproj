@@ -8,9 +8,4 @@
     <ItemGroup>
         <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="3.7.0" />
     </ItemGroup>
-
-    <ItemGroup>
-      <TypeScriptCompile Include="Content\Tiled\Tileset.tsx" />
-    </ItemGroup>
-
 </Project>

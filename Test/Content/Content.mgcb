@@ -64,3 +64,8 @@
 /importer:TiledMapTilesetImporter
 /processor:TiledMapTilesetProcessor
 /build:Tiled/Tileset.tsx
+#begin Copy/Test.json
+/importer:TexturePackerJsonImporter
+/processor:TexturePackerProcessor
+/build:Copy/Test.json
+
