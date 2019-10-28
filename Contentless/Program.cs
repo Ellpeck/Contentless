@@ -87,6 +87,13 @@ namespace Contentless {
                 // override importers
                 var over = GetOverrideImporterFor(relative, overrides);
                 if (over != null) {
+                    // copy special case
+                    if (over == "Copy") {
+                        CopyFile(content, relative);
+                        changed = true;
+                        continue;
+                    }
+
                     importer = Array.Find(importers, i => i.Type.Name == over);
                     if (importer == null) {
                         Console.WriteLine($"Override importer {over} not found for file {relative}");
@@ -171,8 +178,14 @@ namespace Contentless {
             content.Add($"/processor:{importer.Importer.DefaultProcessor}");
             content.Add($"/build:{relative}");
             content.Add("");
-
             Console.WriteLine($"Adding file {relative} with importer {importer.Type.Name} and processor {importer.Importer.DefaultProcessor}");
+        }
+
+        private static void CopyFile(List<string> content, string relative) {
+            content.Add($"#begin {relative}");
+            content.Add($"/copy:{relative}");
+            content.Add("");
+            Console.WriteLine($"Adding file {relative} with the Copy build action");
         }
 
         private static string GetRelativePath(string relativeTo, string path) {

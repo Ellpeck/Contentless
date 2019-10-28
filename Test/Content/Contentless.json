@@ -6,6 +6,7 @@
     ],
     "logSkipped": false,
     "overrides": [
+        ["Copy.*", "Copy"],
         [".json", "JsonContentImporter"]
     ]
 }

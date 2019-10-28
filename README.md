@@ -21,14 +21,12 @@ To add a configuration file to Contentless, simply create a file named `Contentl
         "obj/",
         "bin/"
     ],
-    // If any files that were skipped without errors should be logged
-    // (Files that already have entries or files that were ignored)
+    // If any files that were skipped without errors should be logged (Files that already have entries or files that were ignored)
     "logSkipped": true,
-    // The list of files that should use a different importer than the one
-    // that Contentless automatically determined. Can use regex
+    // The list of files that should use a different importer than the one that Contentless automatically determined. Can use regex
     "overrides": [
-        // Entries are arrays containing the file regex and importer, e.g.
-        // [".json", "JsonImporter"]
+        // Entries are arrays containing the file regex and importer, for example [".json", "JsonImporter"]
+        // If you specify "Copy" as the importer, the file's Build Mode will be set to Copy rather than Build
     ]
 }
 ```
