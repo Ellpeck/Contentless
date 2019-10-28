@@ -14,7 +14,7 @@ Contentless will now automatically add any content files from your `Content` dir
 
 # Configuring
 To add a configuration file to Contentless, simply create a file named `Contentless.json` in the same directory as your `Content.mgcb` file. You can use the config to change several options. For reference, here is a configuration file with the default values that are used if no config is supplied:
-```json
+```json5
 {
     // The list of files that should be excluded. Can use regex
     "exclude": [
