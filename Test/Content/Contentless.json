@@ -5,8 +5,8 @@
         "Ex*.png"
     ],
     "logSkipped": false,
-    "overrides": [
-        ["Copy.*", "Copy"],
-        [".json", "JsonContentImporter"]
-    ]
+    "overrides": {
+        "Copy.*": "Copy",
+        ".json": "JsonContentImporter"
+    }
 }

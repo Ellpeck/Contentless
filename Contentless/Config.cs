@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Contentless {
@@ -10,7 +11,7 @@ namespace Contentless {
         public bool LogSkipped = true;
 
         [JsonProperty(PropertyName = "overrides")]
-        public string[][] Overrides = { };
+        public Dictionary<string, string> Overrides = new Dictionary<string, string>();
 
     }
 }

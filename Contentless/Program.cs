@@ -41,7 +41,7 @@ namespace Contentless {
                 Console.WriteLine("Using default config");
             }
             var excluded = config.ExcludedFiles.Select(MakeFileRegex).ToArray();
-            var overrides = config.Overrides.Select(e => (MakeFileRegex(e[0]), e[1])).ToArray();
+            var overrides = config.Overrides.Select((e, i) => (MakeFileRegex(e.Key), e.Value)).ToArray();
 
             // load any references to be able to include custom content types as well
             foreach (var line in content) {
@@ -136,7 +136,7 @@ namespace Contentless {
             }
         }
 
-        private static string GetOverrideImporterFor(string file, (Regex, string)[] overrides) {
+        private static string GetOverrideImporterFor(string file, IEnumerable<(Regex, string)> overrides) {
             foreach (var (regex, value) in overrides) {
                 if (regex.IsMatch(file))
                     return value;
@@ -144,7 +144,7 @@ namespace Contentless {
             return null;
         }
 
-        private static ImporterInfo GetImporterFor(string file, ImporterInfo[] importers) {
+        private static ImporterInfo GetImporterFor(string file, IEnumerable<ImporterInfo> importers) {
             var extension = Path.GetExtension(file);
             foreach (var importer in importers) {
                 if (importer.Importer.FileExtensions.Contains(extension))

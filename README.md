@@ -24,12 +24,13 @@ To add a configuration file to Contentless, simply create a file named `Contentl
     // If any files that were skipped without errors should be logged (Files that already have entries or files that were ignored)
     "logSkipped": true,
     // The list of files that should use a different importer than the one that Contentless automatically determined. Can use regex
-    "overrides": [
-        // Entries are arrays containing the file regex and importer, for example [".json", "JsonImporter"]
-        // If you specify "Copy" as the importer, the file's Build Mode will be set to Copy rather than Build
-    ]
+    "overrides": {
+        // Entries are file regexes mapped to importer names, for example: ".json": "JsonImporter"
+        // If you specify "Copy" as the importer, the file's Build Mode will be set to Copy rather than Build, for example: ".txt": "Copy"
+    }
 }
 ```
+For an example of a config in use, see the [test config](https://github.com/Ellpeck/Contentless/blob/master/Test/Content/Contentless.json).
 
 # What it does
 When running Contentless and supplying the location of a MonoGame Content Pipeline project (`Content.mgcb`), it scans all of the files in the project's directory as well as its subdirectories. For each file, it checks if the `Content.mgcb` file already contains any references to that file. If no references are found, then a new reference to the file is added. 

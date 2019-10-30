@@ -64,12 +64,11 @@
 /importer:TiledMapTilesetImporter
 /processor:TiledMapTilesetProcessor
 /build:Tiled/Tileset.tsx
+#begin Json/Copy.json
+/copy:Json/Copy.json
 
 #begin Json/Test.json
 /importer:JsonContentImporter
 /processor:JsonContentProcessor
 /build:Json/Test.json
-
-#begin Json/Copy.json
-/copy:Json/Copy.json
 
