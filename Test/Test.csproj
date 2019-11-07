@@ -6,6 +6,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Contentless" Version="2.0.1" />
         <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="3.7.0" />
     </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Content\Content.mgcb" />
+      <MonoGameContentReference Include="Content\Content.mgcb" />
+    </ItemGroup>
+    
 </Project>

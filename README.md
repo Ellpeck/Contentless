@@ -1,32 +1,42 @@
 # Contentless
-A commandline tool for MonoGame that automatically handles adding assets to the Content Pipeline project so you don't have to use their interface to add every content file manually.
+A tool for MonoGame that automatically handles adding assets to the Content Pipeline project so you don't have to use their interface to add every content file manually.
 
 # How to use
-Clone this repository or download a build from the [Releases](https://github.com/Ellpeck/Contentless/releases) tab. 
-
-Next, add Contentless to your build process by adding the following task to your `.csproj` file. Note that you might have to change the paths to fit your project's setup.
+To use Contentless, you first have to add it to your project, either through your NuGet package manager or by adding it to your `.csproj` file as follows. Keep in mind to update the `Version` to the most recent one. You can find the package on the [NuGet website](https://www.nuget.org/packages/Contentless/) as well.
 ```xml
-<Target Name="Contentless" BeforeTargets="BeforeBuild">
-    <Exec Command="..\..\Contentless\Build\Contentless.exe Content/Content.mgcb" />
-</Target>
+<ItemGroup>
+    <PackageReference Include="Contentless" Version="VERSION" />
+</ItemGroup>
 ```
+Next, you need to find the reference to your `Content.mgcb` file in your `.csproj` file or create one if there isn't already one present. The reference's type should be `MonoGameContentReference` so that Contentless can identify it correctly. If you're using the [MonoGame Content Builder](https://www.nuget.org/packages/MonoGame.Content.Builder/) alongside Contentless, this setting should already be applied.
+```xml
+<ItemGroup>
+    <MonoGameContentReference Include="Content\Content.mgcb" />
+</ItemGroup>
+```
+
 Contentless will now automatically add any content files from your `Content` directory and subdirectories to your `Content.mgcb` file if they haven't already been added either manually or by Contentless. No existing items' configurations will be overridden, so you can still use the Content Pipeline tool to modify any settings as well.
 
 # Configuring
-To add a configuration file to Contentless, simply create a file named `Contentless.json` in the same directory as your `Content.mgcb` file. You can use the config to change several options. For reference, here is a configuration file with the default values that are used if no config is supplied, along with some documentation:
+To add a configuration file to Contentless, simply create a file named `Contentless.json` in the same directory as your `Content.mgcb` file. You can use the config to change several options:
 ```json5
 {
-    // The list of files that should be excluded. Can use regex
+    // The list of files that should be excluded. Can use regex. 
+    // Default: ["obj/", "bin/"]
     "exclude": [
         "obj/",
         "bin/"
     ],
     // If any files that were skipped without errors should be logged (Files that already have entries or files that were ignored)
+    // Default: true
     "logSkipped": true,
     // The list of files that should use a different importer than the one that Contentless automatically determined. Can use regex
+    // Default: {}
     "overrides": {
-        // Entries are file regexes mapped to importer names, for example: ".json": "JsonImporter"
-        // If you specify "Copy" as the importer, the file's Build Mode will be set to Copy rather than Build, for example: ".txt": "Copy"
+        // Example: Make all files matching the regex ".json" use the importer "JsonImporter"
+        ".json": "JsonImporter",
+        // Example: Specifying "Copy" as the importer sets the file's Build Mode to "Copy" instead of "Build"
+        ".txt": "Copy"
     }
 }
 ```

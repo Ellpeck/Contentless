@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+    <metadata>
+        <id>Contentless</id>
+        <version>2.0.1</version>
+        <authors>Ellpeck</authors>
+        <description>A tool for MonoGame that automatically handles adding assets to the Content Pipeline project</description>
+        <tags>monogame mono xna content pipeline mgcb builder tool library</tags>
+        <projectUrl>https://github.com/Ellpeck/Contentless</projectUrl>
+        <licenseUrl>https://github.com/Ellpeck/Contentless/blob/master/LICENSE</licenseUrl>
+        <repository type="git" url="https://github.com/Ellpeck/Contentless"/>
+        <readme>README.md</readme>
+    </metadata>
+    <files>
+        <file src="../README.md" target="README.md"/>
+        <file src="_._" target="lib/net462/"/>
+        <file src="Contentless.targets" target="build/Contentless.targets"/>
+        <file src="bin\Debug\net462\**\*" target="tools/"/>
+    </files>
+</package>
