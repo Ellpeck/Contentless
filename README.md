@@ -31,12 +31,15 @@ To add a configuration file to Contentless, simply create a file named `Contentl
     // Default: true
     "logSkipped": true,
     // The list of files that should use a different importer than the one that Contentless automatically determined. Can use regex
+    // Specifying a string as the value represents an override importer, specifying an array with two entries represents the override importer and override processor
     // Default: {}
     "overrides": {
         // Example: Make all files matching the regex ".json" use the importer "JsonImporter"
         ".json": "JsonImporter",
         // Example: Specifying "Copy" as the importer sets the file's Build Mode to "Copy" instead of "Build"
-        ".txt": "Copy"
+        ".txt": "Copy",
+        // Example: Specifying both an importer and a processor
+        ".ogg": ["OggImporter", "SongProcessor"]
     }
 }
 ```

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Contentless {
     public static class Program {
@@ -41,7 +42,7 @@ namespace Contentless {
                 Console.WriteLine("Using default config");
             }
             var excluded = config.ExcludedFiles.Select(MakeFileRegex).ToArray();
-            var overrides = config.Overrides.Select((e, i) => (MakeFileRegex(e.Key), e.Value)).ToArray();
+            var overrides = GetOverrides(config.Overrides).ToArray();
 
             // load any references to be able to include custom content types as well
             foreach (var line in content) {
@@ -60,6 +61,8 @@ namespace Contentless {
             // load content importers
             var importers = GetContentImporters().ToArray();
             Console.WriteLine($"Found possible importer types {string.Join(", ", importers.AsEnumerable())}");
+            var processors = GetContentProcessors().ToArray();
+            Console.WriteLine($"Found possible processor types {string.Join(", ", processors.AsEnumerable())}");
 
             var changed = false;
             foreach (var file in contentFile.Directory.EnumerateFiles("*", SearchOption.AllDirectories)) {
@@ -83,35 +86,46 @@ namespace Contentless {
                 }
 
                 ImporterInfo importer = null;
+                string processor = null;
 
                 // override importers
-                var over = GetOverrideImporterFor(relative, overrides);
+                var over = GetOverrideFor(relative, overrides);
                 if (over != null) {
                     // copy special case
-                    if (over == "Copy") {
+                    if (over.Importer == "Copy") {
                         CopyFile(content, relative);
                         changed = true;
                         continue;
                     }
 
-                    importer = Array.Find(importers, i => i.Type.Name == over);
+                    importer = Array.Find(importers, i => i.Type.Name == over.Importer);
                     if (importer == null) {
-                        Console.WriteLine($"Override importer {over} not found for file {relative}");
+                        Console.WriteLine($"Override importer {over.Importer} not found for file {relative}");
                         continue;
+                    }
+
+                    if (over.Processor != null) {
+                        processor = Array.Find(processors, p => p == over.Processor);
+                        if (processor == null) {
+                            Console.WriteLine($"Override processor {over.Processor} not found for file {relative}");
+                            continue;
+                        }
                     }
                 }
 
                 // normal importers
                 if (importer == null)
                     importer = GetImporterFor(relative, importers);
+                if (processor == null)
+                    processor = Array.Find(processors, p => p == importer.Importer.DefaultProcessor);
 
                 // no importer found :(
-                if (importer == null) {
-                    Console.WriteLine($"No importer found for file {relative}");
+                if (importer == null || processor == null) {
+                    Console.WriteLine($"No importer or processor found for file {relative}");
                     continue;
                 }
 
-                AddFile(content, relative, importer);
+                AddFile(content, relative, importer, processor);
                 changed = true;
             }
 
@@ -136,10 +150,38 @@ namespace Contentless {
             }
         }
 
-        private static string GetOverrideImporterFor(string file, IEnumerable<(Regex, string)> overrides) {
-            foreach (var (regex, value) in overrides) {
-                if (regex.IsMatch(file))
-                    return value;
+        private static IEnumerable<string> GetContentProcessors() {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+                foreach (var type in assembly.GetTypes()) {
+                    var processor = type.GetCustomAttribute(typeof(ContentProcessorAttribute), true);
+                    if (processor != null)
+                        yield return type.Name;
+                }
+            }
+        }
+
+        private static IEnumerable<OverrideInfo> GetOverrides(Dictionary<string, JToken> config) {
+            foreach (var entry in config) {
+                var regex = MakeFileRegex(entry.Key);
+                if (entry.Value.Type == JTokenType.Array) {
+                    var arr = (JArray) entry.Value;
+                    if (arr.Count != 2) {
+                        Console.WriteLine("The override config " + entry.Key + " is invalid: The array needs to contain exactly two entries");
+                    } else {
+                        yield return new OverrideInfo(regex, arr[0].ToString(), arr[1].ToString());
+                    }
+                } else if (entry.Value.Type == JTokenType.String) {
+                    yield return new OverrideInfo(regex, entry.Value.ToString(), null);
+                } else {
+                    Console.WriteLine("The override config " + entry.Key + " is invalid: Should be an array or a string");
+                }
+            }
+        }
+
+        private static OverrideInfo GetOverrideFor(string file, IEnumerable<OverrideInfo> overrides) {
+            foreach (var over in overrides) {
+                if (over.Regex.IsMatch(file))
+                    return over;
             }
             return null;
         }
@@ -172,13 +214,13 @@ namespace Contentless {
             return content;
         }
 
-        private static void AddFile(List<string> content, string relative, ImporterInfo importer) {
+        private static void AddFile(List<string> content, string relative, ImporterInfo importer, string processor) {
             content.Add($"#begin {relative}");
-            content.Add($"/importer:{importer.Type.Name}");
-            content.Add($"/processor:{importer.Importer.DefaultProcessor}");
+            content.Add($"/importer:{importer}");
+            content.Add($"/processor:{processor}");
             content.Add($"/build:{relative}");
             content.Add("");
-            Console.WriteLine($"Adding file {relative} with importer {importer.Type.Name} and processor {importer.Importer.DefaultProcessor}");
+            Console.WriteLine($"Adding file {relative} with importer {importer} and processor {processor}");
         }
 
         private static void CopyFile(List<string> content, string relative) {

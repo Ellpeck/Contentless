@@ -7,6 +7,7 @@
     "logSkipped": false,
     "overrides": {
         "Copy.*": "Copy",
-        ".json": "JsonContentImporter"
+        ".json": ["JsonContentImporter", "FontTextureProcessor"],
+        ".ogg": ["OggImporter", "SongProcessor"]
     }
 }
