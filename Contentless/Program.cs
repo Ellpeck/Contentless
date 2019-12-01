@@ -116,7 +116,7 @@ namespace Contentless {
                 // normal importers
                 if (importer == null)
                     importer = GetImporterFor(relative, importers);
-                if (processor == null)
+                if (importer != null && processor == null)
                     processor = Array.Find(processors, p => p == importer.Importer.DefaultProcessor);
 
                 // no importer found :(
