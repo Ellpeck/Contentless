@@ -142,7 +142,7 @@ namespace Contentless {
 
         private static IEnumerable<ImporterInfo> GetContentImporters() {
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
-                foreach (var type in assembly.GetTypes()) {
+                foreach (var type in assembly.GetExportedTypes()) {
                     var importer = (ContentImporterAttribute) type.GetCustomAttribute(typeof(ContentImporterAttribute), true);
                     if (importer != null)
                         yield return new ImporterInfo(importer, type);
@@ -152,7 +152,7 @@ namespace Contentless {
 
         private static IEnumerable<string> GetContentProcessors() {
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
-                foreach (var type in assembly.GetTypes()) {
+                foreach (var type in assembly.GetExportedTypes()) {
                     var processor = type.GetCustomAttribute(typeof(ContentProcessorAttribute), true);
                     if (processor != null)
                         yield return type.Name;
