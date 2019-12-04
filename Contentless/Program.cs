@@ -59,10 +59,9 @@ namespace Contentless {
             }
 
             // load content importers
-            var importers = GetContentImporters().ToArray();
-            Console.WriteLine($"Found possible importer types {string.Join(", ", importers.AsEnumerable())}");
-            var processors = GetContentProcessors().ToArray();
-            Console.WriteLine($"Found possible processor types {string.Join(", ", processors.AsEnumerable())}");
+            var (importers, processors) = GetContentData();
+            Console.WriteLine($"Found possible importer types {string.Join(", ", importers)}");
+            Console.WriteLine($"Found possible processor types {string.Join(", ", processors)}");
 
             var changed = false;
             foreach (var file in contentFile.Directory.EnumerateFiles("*", SearchOption.AllDirectories)) {
@@ -98,14 +97,14 @@ namespace Contentless {
                         continue;
                     }
 
-                    importer = Array.Find(importers, i => i.Type.Name == over.Importer);
+                    importer = importers.Find(i => i.Type.Name == over.Importer);
                     if (importer == null) {
                         Console.WriteLine($"Override importer {over.Importer} not found for file {relative}");
                         continue;
                     }
 
                     if (over.Processor != null) {
-                        processor = Array.Find(processors, p => p == over.Processor);
+                        processor = processors.Find(p => p == over.Processor);
                         if (processor == null) {
                             Console.WriteLine($"Override processor {over.Processor} not found for file {relative}");
                             continue;
@@ -117,7 +116,7 @@ namespace Contentless {
                 if (importer == null)
                     importer = GetImporterFor(relative, importers);
                 if (importer != null && processor == null)
-                    processor = Array.Find(processors, p => p == importer.Importer.DefaultProcessor);
+                    processor = processors.Find(p => p == importer.Importer.DefaultProcessor);
 
                 // no importer found :(
                 if (importer == null || processor == null) {
@@ -140,24 +139,24 @@ namespace Contentless {
             Console.Write("Done");
         }
 
-        private static IEnumerable<ImporterInfo> GetContentImporters() {
+        private static (List<ImporterInfo>, List<string>) GetContentData() {
+            var importers = new List<ImporterInfo>();
+            var processors = new List<string>();
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
-                foreach (var type in assembly.GetExportedTypes()) {
-                    var importer = (ContentImporterAttribute) type.GetCustomAttribute(typeof(ContentImporterAttribute), true);
-                    if (importer != null)
-                        yield return new ImporterInfo(importer, type);
+                try {
+                    foreach (var type in assembly.GetExportedTypes()) {
+                        var importer = (ContentImporterAttribute) type.GetCustomAttribute(typeof(ContentImporterAttribute), true);
+                        if (importer != null)
+                            importers.Add(new ImporterInfo(importer, type));
+                        var processor = type.GetCustomAttribute(typeof(ContentProcessorAttribute), true);
+                        if (processor != null)
+                            processors.Add(type.Name);
+                    }
+                } catch (Exception) {
+                    // ignored
                 }
             }
-        }
-
-        private static IEnumerable<string> GetContentProcessors() {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
-                foreach (var type in assembly.GetExportedTypes()) {
-                    var processor = type.GetCustomAttribute(typeof(ContentProcessorAttribute), true);
-                    if (processor != null)
-                        yield return type.Name;
-                }
-            }
+            return (importers, processors);
         }
 
         private static IEnumerable<OverrideInfo> GetOverrides(Dictionary<string, JToken> config) {
@@ -241,5 +240,4 @@ namespace Contentless {
         }
 
     }
-
 }

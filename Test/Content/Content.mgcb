@@ -51,8 +51,3 @@
 /processor:TiledMapTilesetProcessor
 /build:Tiled/Tileset.tsx
 
-#begin Textures/Exclude.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/build:Textures/Exclude.png
-
