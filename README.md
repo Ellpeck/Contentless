@@ -39,7 +39,9 @@ To add a configuration file to Contentless, simply create a file named `Contentl
         // Example: Specifying "Copy" as the importer sets the file's Build Mode to "Copy" instead of "Build"
         ".txt": "Copy",
         // Example: Specifying both an importer and a processor
-        ".ogg": ["OggImporter", "SongProcessor"]
+        ".ogg": ["OggImporter", "SongProcessor"],
+        // Example: Only specifying a processor
+        ".wav": ["Auto", "SoundEffectProcessor"]
     }
 }
 ```

@@ -13,6 +13,7 @@
 /reference:..\bin\Debug\netcoreapp2.2\MonoGame.Extended.Content.Pipeline.dll
 
 #---------------------------------- Content ---------------------------------#
+
 #begin Json/Copy.json
 /copy:Json/Copy.json
 
@@ -23,7 +24,7 @@
 
 #begin Locale/Interface.xml
 /importer:XmlImporter
-/processor:PassThroughProcessor
+/processor:FontTextureProcessor
 /build:Locale/Interface.xml
 
 #begin Textures/Icons.png
@@ -50,4 +51,9 @@
 /importer:TiledMapTilesetImporter
 /processor:TiledMapTilesetProcessor
 /build:Tiled/Tileset.tsx
+
+#begin Textures/Exclude.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/build:Textures/Exclude.png
 

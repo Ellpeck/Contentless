@@ -8,6 +8,7 @@
     "overrides": {
         "Copy.*": "Copy",
         ".json": ["JsonContentImporter", "FontTextureProcessor"],
-        ".ogg": ["OggImporter", "SongProcessor"]
+        ".ogg": ["OggImporter", "SongProcessor"],
+        ".xml": ["", "FontTextureProcessor"]
     }
 }

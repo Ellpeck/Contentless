@@ -91,19 +91,21 @@ namespace Contentless {
                 var over = GetOverrideFor(relative, overrides);
                 if (over != null) {
                     // copy special case
-                    if (over.Importer == "Copy") {
+                    if (over.Importer == "Copy" || over.Processor == "Copy") {
                         CopyFile(content, relative);
                         changed = true;
                         continue;
                     }
 
-                    importer = importers.Find(i => i.Type.Name == over.Importer);
-                    if (importer == null) {
-                        Console.WriteLine($"Override importer {over.Importer} not found for file {relative}");
-                        continue;
+                    if (!string.IsNullOrEmpty(over.Importer) && over.Importer != "Auto") {
+                        importer = importers.Find(i => i.Type.Name == over.Importer);
+                        if (importer == null) {
+                            Console.WriteLine($"Override importer {over.Importer} not found for file {relative}");
+                            continue;
+                        }
                     }
 
-                    if (over.Processor != null) {
+                    if (!string.IsNullOrEmpty(over.Processor) && over.Processor != "Auto") {
                         processor = processors.Find(p => p == over.Processor);
                         if (processor == null) {
                             Console.WriteLine($"Override processor {over.Processor} not found for file {relative}");
