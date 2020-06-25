@@ -2,7 +2,7 @@
 <package>
     <metadata>
         <id>Contentless</id>
-        <version>2.0.6</version>
+        <version>3.0.0</version>
         <authors>Ellpeck</authors>
         <description>A tool for MonoGame that automatically handles adding assets to the Content Pipeline project</description>
         <tags>monogame mono xna content pipeline mgcb builder tool library</tags>
