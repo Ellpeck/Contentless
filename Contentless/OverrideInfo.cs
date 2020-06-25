@@ -4,13 +4,11 @@ namespace Contentless {
     public class OverrideInfo {
 
         public readonly Regex Regex;
-        public readonly string Importer;
-        public readonly string Processor;
+        public readonly Override Override;
 
-        public OverrideInfo(Regex regex, string importer, string processor) {
+        public OverrideInfo(Regex regex, Override over) {
             this.Regex = regex;
-            this.Importer = importer;
-            this.Processor = processor;
+            this.Override = over;
         }
 
     }

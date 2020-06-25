@@ -6,9 +6,24 @@
     ],
     "logSkipped": false,
     "overrides": {
-        "Copy.*": "Copy",
-        ".json": ["JsonContentImporter", "FontTextureProcessor"],
-        ".ogg": ["OggImporter", "SongProcessor"],
-        ".xml": ["", "FontTextureProcessor"]
+        "Copy.*": {
+            "copy": true
+        },
+        ".json": {
+            "importer": "JsonContentImporter",
+            "processor": "FontTextureProcessor"
+        },
+        ".ogg": {
+            "importer": "OggImporter",
+            "processor": "SongProcessor"
+        },
+        ".xml": {
+            "processor": "FontTextureProcessor"
+        },
+        ".png": {
+            "processorParams": {
+                "TextureFormat": "Compressed"
+            }
+        }
     }
 }

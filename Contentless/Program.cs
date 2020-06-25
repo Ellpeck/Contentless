@@ -86,29 +86,32 @@ namespace Contentless {
 
                 ImporterInfo importer = null;
                 string processor = null;
+                Dictionary<string, string> processorParams = null;
 
                 // override importers
                 var over = GetOverrideFor(relative, overrides);
                 if (over != null) {
+                    processorParams = over.Override.ProcessorParams;
+
                     // copy special case
-                    if (over.Importer == "Copy" || over.Processor == "Copy") {
+                    if (over.Override.Copy) {
                         CopyFile(content, relative);
                         changed = true;
                         continue;
                     }
 
-                    if (!string.IsNullOrEmpty(over.Importer) && over.Importer != "Auto") {
-                        importer = importers.Find(i => i.Type.Name == over.Importer);
+                    if (!string.IsNullOrEmpty(over.Override.Importer)) {
+                        importer = importers.Find(i => i.Type.Name == over.Override.Importer);
                         if (importer == null) {
-                            Console.WriteLine($"Override importer {over.Importer} not found for file {relative}");
+                            Console.WriteLine($"Override importer {over.Override.Importer} not found for file {relative}");
                             continue;
                         }
                     }
 
-                    if (!string.IsNullOrEmpty(over.Processor) && over.Processor != "Auto") {
-                        processor = processors.Find(p => p == over.Processor);
+                    if (!string.IsNullOrEmpty(over.Override.Processor)) {
+                        processor = processors.Find(p => p == over.Override.Processor);
                         if (processor == null) {
-                            Console.WriteLine($"Override processor {over.Processor} not found for file {relative}");
+                            Console.WriteLine($"Override processor {over.Override.Processor} not found for file {relative}");
                             continue;
                         }
                     }
@@ -126,7 +129,7 @@ namespace Contentless {
                     continue;
                 }
 
-                AddFile(content, relative, importer, processor);
+                AddFile(content, relative, importer.Type.Name, processor, processorParams);
                 changed = true;
             }
 
@@ -154,29 +157,16 @@ namespace Contentless {
                         if (processor != null)
                             processors.Add(type.Name);
                     }
-                } catch (Exception) {
+                } catch {
                     // ignored
                 }
             }
             return (importers, processors);
         }
 
-        private static IEnumerable<OverrideInfo> GetOverrides(Dictionary<string, JToken> config) {
-            foreach (var entry in config) {
-                var regex = MakeFileRegex(entry.Key);
-                if (entry.Value.Type == JTokenType.Array) {
-                    var arr = (JArray) entry.Value;
-                    if (arr.Count != 2) {
-                        Console.WriteLine("The override config " + entry.Key + " is invalid: The array needs to contain exactly two entries");
-                    } else {
-                        yield return new OverrideInfo(regex, arr[0].ToString(), arr[1].ToString());
-                    }
-                } else if (entry.Value.Type == JTokenType.String) {
-                    yield return new OverrideInfo(regex, entry.Value.ToString(), null);
-                } else {
-                    Console.WriteLine("The override config " + entry.Key + " is invalid: Should be an array or a string");
-                }
-            }
+        private static IEnumerable<OverrideInfo> GetOverrides(Dictionary<string, Override> config) {
+            foreach (var entry in config)
+                yield return new OverrideInfo(MakeFileRegex(entry.Key), entry.Value);
         }
 
         private static OverrideInfo GetOverrideFor(string file, IEnumerable<OverrideInfo> overrides) {
@@ -215,10 +205,14 @@ namespace Contentless {
             return content;
         }
 
-        private static void AddFile(List<string> content, string relative, ImporterInfo importer, string processor) {
+        private static void AddFile(List<string> content, string relative, string importer, string processor, Dictionary<string, string> processorParams) {
             content.Add($"#begin {relative}");
             content.Add($"/importer:{importer}");
             content.Add($"/processor:{processor}");
+            if (processorParams != null) {
+                foreach (var kv in processorParams)
+                    content.Add($"/processorParam:{kv.Key}={kv.Value}");
+            }
             content.Add($"/build:{relative}");
             content.Add("");
             Console.WriteLine($"Adding file {relative} with importer {importer} and processor {processor}");

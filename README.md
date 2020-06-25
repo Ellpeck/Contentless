@@ -30,18 +30,32 @@ To add a configuration file to Contentless, simply create a file named `Contentl
     // If any files that were skipped without errors should be logged (Files that already have entries or files that were ignored)
     // Default: true
     "logSkipped": true,
-    // The list of files that should use a different importer than the one that Contentless automatically determined. Can use regex
-    // Specifying a string as the value represents an override importer, specifying an array with two entries represents the override importer and override processor
+    // The list of files that should use a different importer or processor than the one that Contentless automatically determined. Can use regex.
     // Default: {}
     "overrides": {
         // Example: Make all files matching the regex ".json" use the importer "JsonImporter"
-        ".json": "JsonImporter",
-        // Example: Specifying "Copy" as the importer sets the file's Build Mode to "Copy" instead of "Build"
-        ".txt": "Copy",
+        ".json": {
+            "importer": "JsonImporter"        
+        },
         // Example: Specifying both an importer and a processor
-        ".ogg": ["OggImporter", "SongProcessor"],
+        ".ogg": {
+            "importer": "OggImporter",
+            "processor": "SongProcessor"
+        },
         // Example: Only specifying a processor
-        ".wav": ["Auto", "SoundEffectProcessor"]
+        ".wav": {
+            "processor": "SoundEffectProcessor"
+        },
+        // Example: Setting a file to the Copy build action
+        ".txt": {
+            "copy": true
+        },
+        // Example: Adding processor parameters for files
+        "TestFile.png": {
+            "processorParams": {
+                "TextureFormat": "Compressed"
+            }
+        }
     }
 }
 ```

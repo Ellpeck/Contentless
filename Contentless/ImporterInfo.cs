@@ -12,9 +12,5 @@ namespace Contentless {
             this.Type = type;
         }
 
-        public override string ToString() {
-            return this.Type.Name;
-        }
-
     }
 }
