@@ -17,6 +17,11 @@
 #begin Json/Copy.json
 /copy:Json/Copy.json
 
+#begin Json/Test.json
+/importer:JsonContentImporter
+/processor:FontTextureProcessor
+/build:Json/Test.json
+
 #begin Locale/Interface.xml
 /importer:XmlImporter
 /processor:FontTextureProcessor
@@ -34,26 +39,16 @@
 /processorParam:TextureFormat=Compressed
 /build:Textures/Inside.png
 
+#begin Tiled/Map.tmx
+/importer:TiledMapImporter
+/processor:TiledMapProcessor
+/build:Tiled/Map.tmx
+
 #begin Tiled/Tiles.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:TextureFormat=Compressed
 /build:Tiled/Tiles.png
-
-#begin Textures/Exclude.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/build:Textures/Exclude.png
-
-#begin Json/Test.json
-/importer:TexturePackerJsonImporter
-/processor:TexturePackerProcessor
-/build:Json/Test.json
-
-#begin Tiled/Map.tmx
-/importer:TiledMapImporter
-/processor:TiledMapProcessor
-/build:Tiled/Map.tmx
 
 #begin Tiled/Tileset.tsx
 /importer:TiledMapTilesetImporter
