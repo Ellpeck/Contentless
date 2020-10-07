@@ -8,7 +8,7 @@ To use Contentless, you first have to add it to your project, either through you
     <PackageReference Include="Contentless" Version="VERSION" />
 </ItemGroup>
 ```
-Next, you need to find the reference to your `Content.mgcb` file in your `.csproj` file or create one if there isn't already one present. The reference's type should be `MonoGameContentReference` so that Contentless can identify it correctly. If you're using the [MonoGame Content Builder](https://www.nuget.org/packages/MonoGame.Content.Builder/) alongside Contentless, this setting should already be applied.
+Next, you need to find the reference to your `Content.mgcb` file in your `.csproj` file or create one if there isn't already one present. The reference's type should be `MonoGameContentReference` so that Contentless can identify it correctly. If you're using the [MonoGame Content Builder](https://www.nuget.org/packages/MonoGame.Content.Builder.Task) alongside Contentless, this setting should already be applied.
 ```xml
 <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
