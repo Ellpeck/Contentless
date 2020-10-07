@@ -9,7 +9,6 @@
         <projectUrl>https://github.com/Ellpeck/Contentless</projectUrl>
         <licenseUrl>https://github.com/Ellpeck/Contentless/blob/master/LICENSE</licenseUrl>
         <repository type="git" url="https://github.com/Ellpeck/Contentless"/>
-        <readme>README.md</readme>
     </metadata>
     <files>
         <file src="../README.md" target="README.md"/>
