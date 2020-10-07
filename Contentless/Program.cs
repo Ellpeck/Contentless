@@ -149,7 +149,7 @@ namespace Contentless {
             var processors = new List<string>();
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
                 try {
-                    foreach (var type in assembly.GetExportedTypes()) {
+                    foreach (var type in assembly.GetTypes()) {
                         var importer = (ContentImporterAttribute) type.GetCustomAttribute(typeof(ContentImporterAttribute), true);
                         if (importer != null)
                             importers.Add(new ImporterInfo(importer, type));

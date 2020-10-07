@@ -45,3 +45,18 @@
 /processor:TextureProcessor
 /build:Textures/Exclude.png
 
+#begin Json/Test.json
+/importer:TexturePackerJsonImporter
+/processor:TexturePackerProcessor
+/build:Json/Test.json
+
+#begin Tiled/Map.tmx
+/importer:TiledMapImporter
+/processor:TiledMapProcessor
+/build:Tiled/Map.tmx
+
+#begin Tiled/Tileset.tsx
+/importer:TiledMapTilesetImporter
+/processor:TiledMapTilesetProcessor
+/build:Tiled/Tileset.tsx
+
