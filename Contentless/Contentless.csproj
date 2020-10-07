@@ -10,20 +10,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Autofac" Version="5.2.0" />
         <PackageReference Include="MonoGame.Framework.Content.Pipeline" Version="3.8.0.1641">
             <PrivateAssets>All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641">
             <PrivateAssets>All</PrivateAssets>
         </PackageReference>
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="12.0.2">
-            <PrivateAssets>All</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="System.ValueTuple" Version="4.5.0">
             <PrivateAssets>All</PrivateAssets>
         </PackageReference>
     </ItemGroup>
