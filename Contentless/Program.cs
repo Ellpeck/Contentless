@@ -17,7 +17,7 @@ namespace Contentless {
                 return;
             }
 
-            var contentFile = new FileInfo(Path.Combine(Environment.CurrentDirectory, args[0]));
+            var contentFile = new FileInfo(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, args[0])));
             if (!contentFile.Exists) {
                 Console.WriteLine($"Unable to find content file {contentFile}");
                 return;
@@ -49,7 +49,7 @@ namespace Contentless {
                 if (!line.StartsWith("/reference:"))
                     continue;
                 var reference = line.Substring(11);
-                var refPath = Path.Combine(contentFile.DirectoryName, reference);
+                var refPath = Path.GetFullPath(Path.Combine(contentFile.DirectoryName, reference));
                 try {
                     Assembly.LoadFrom(refPath);
                     Console.WriteLine($"Using reference {refPath}");
@@ -157,8 +157,8 @@ namespace Contentless {
                         if (processor != null)
                             processors.Add(type.Name);
                     }
-                } catch {
-                    // ignored
+                } catch (Exception e) {
+                    Console.WriteLine($"Error gathering types in reference {assembly}: {e}");
                 }
             }
             return (importers, processors);

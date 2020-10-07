@@ -2,7 +2,7 @@
 <package>
     <metadata>
         <id>Contentless</id>
-        <version>3.0.1</version>
+        <version>3.0.2</version>
         <authors>Ellpeck</authors>
         <description>A tool for MonoGame that automatically handles adding assets to the Content Pipeline project</description>
         <tags>monogame mono xna content pipeline mgcb builder tool library</tags>
@@ -12,8 +12,8 @@
     </metadata>
     <files>
         <file src="../README.md" target="README.md"/>
-        <file src="_._" target="lib/net462/"/>
+        <file src="_._" target="lib/netcoreapp3.1/"/>
         <file src="Contentless.targets" target="build/Contentless.targets"/>
-        <file src="bin\Debug\net462\**\*" target="tools/"/>
+        <file src="bin\Debug\netcoreapp3.1\**\*" target="tools/"/>
     </files>
 </package>
