@@ -1,5 +1,12 @@
 <Project>
     <Target Name="Contentless" BeforeTargets="BeforeBuild">
-        <Exec Command="$(MSBuildThisFileDirectory)/../tools/Contentless.exe @(MonoGameContentReference)"/>
+        <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+            // We use mono to run Contentless when we're not on Windows. This isn't pretty, but it'll do until we switch to the new task system.
+            <Mono Condition="Exists('/Library/Frameworks/Mono.framework/Versions/Current/bin/mono')">/Library/Frameworks/Mono.framework/Versions/Current/bin/mono</Mono>
+            <Mono Condition="Exists('/usr/local/bin/mono')">/usr/local/bin/mono</Mono>
+            <Mono Condition="Exists('/usr/bin/mono')">/usr/bin/mono</Mono>
+            <Mono Condition="'$(Mono)' == ''">mono</Mono>
+        </PropertyGroup>
+        <Exec Command="$(Mono) $(MSBuildThisFileDirectory)/../tools/Contentless.exe @(MonoGameContentReference)"/>
     </Target>
 </Project>
