@@ -2,18 +2,24 @@
 <package>
     <metadata>
         <id>Contentless</id>
-        <version>3.0.5</version>
         <authors>Ellpeck</authors>
         <description>A tool for MonoGame that automatically handles adding assets to the Content Pipeline project</description>
         <tags>monogame mono xna content pipeline mgcb builder tool library</tags>
         <projectUrl>https://github.com/Ellpeck/Contentless</projectUrl>
-        <licenseUrl>https://github.com/Ellpeck/Contentless/blob/master/LICENSE</licenseUrl>
+        <license type="expression">MIT</license>
         <repository type="git" url="https://github.com/Ellpeck/Contentless"/>
+        <readme>README.md</readme>
+        <icon>Logo.png</icon>
+        <version>3.0.5</version>
+        <dependencies>
+            <group targetFramework="net5.0" />
+        </dependencies>
     </metadata>
     <files>
-        <file src="../README.md" target="README.md"/>
-        <file src="_._" target="lib/netcoreapp3.1/"/>
+        <file src="_._" target="lib/net5.0/"/>
         <file src="Contentless.targets" target="build/Contentless.targets"/>
-        <file src="bin\Debug\netcoreapp3.1\**\*" target="tools/"/>
+        <file src="bin\Debug\net5.0\**\*" target="tools/"/>
+        <file src="../README.md" target="" />
+        <file src="../Logo.png" target="" />
     </files>
 </package>

@@ -1,5 +1,6 @@
-# Contentless
-A tool for MonoGame that automatically handles adding assets to the Content Pipeline project so you don't have to use their interface to add every content file manually.
+![The Contentless logo](https://raw.githubusercontent.com/Ellpeck/Contentless/master/Logo.png)
+
+**Contentless** is tool for MonoGame that automatically handles adding assets to the Content Pipeline project so you don't have to use their interface to add every content file manually.
 
 # How to use
 To use Contentless, you first have to add it to your project, either through your NuGet package manager or by adding it to your `.csproj` file as follows. Keep in mind to update the `Version` to the most recent one. You can find the package on the [NuGet website](https://www.nuget.org/packages/Contentless/) as well.
