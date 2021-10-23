@@ -1,4 +1,4 @@
-![The Contentless logo](https://raw.githubusercontent.com/Ellpeck/Contentless/master/Logo.png)
+![The Contentless logo](https://raw.githubusercontent.com/Ellpeck/Contentless/main/Logo.png)
 
 **Contentless** is tool for MonoGame that automatically handles adding assets to the Content Pipeline project so you don't have to use their interface to add every content file manually.
 
@@ -60,7 +60,7 @@ To add a configuration file to Contentless, simply create a file named `Contentl
     }
 }
 ```
-For an example of a config in use, see the [test config](https://github.com/Ellpeck/Contentless/blob/master/Test/Content/Contentless.json).
+For an example of a config in use, see the [test config](https://github.com/Ellpeck/Contentless/blob/main/Test/Content/Contentless.json).
 
 # What it does
 When running Contentless and supplying the location of a MonoGame Content Pipeline project (`Content.mgcb`), it scans all of the files in the project's directory as well as its subdirectories. For each file, it checks if the `Content.mgcb` file already contains any references to that file. If no references are found, then a new reference to the file is added. 
