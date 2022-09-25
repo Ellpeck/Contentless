@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+    
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
-
+    
     <ItemGroup>
         <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="3.8.0" />
     </ItemGroup>
-
-    <ItemGroup>
-      <None Remove="Content\Content.mgcb" />
-      <MonoGameContentReference Include="Content\Content.mgcb" />
-    </ItemGroup>
     
+    <ItemGroup>
+        <None Remove="Content\Content.mgcb" />
+        <MonoGameContentReference Include="Content\Content.mgcb" />
+    </ItemGroup>
+
 </Project>

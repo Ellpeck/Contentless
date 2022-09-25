@@ -1,5 +1,5 @@
 <Project>
     <Target Name="Contentless" BeforeTargets="BeforeBuild">
-        <Exec Command="dotnet $(MSBuildThisFileDirectory)/../tools/Contentless.dll @(MonoGameContentReference)"/>
+        <Exec Command="dotnet $(MSBuildThisFileDirectory)/../tools/Contentless.dll @(MonoGameContentReference)" />
     </Target>
 </Project>

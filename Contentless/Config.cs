@@ -1,31 +1,30 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
-namespace Contentless {
-    public class Config {
+namespace Contentless;
 
-        [JsonProperty("exclude")]
-        public string[] ExcludedFiles = {"bin/", "obj/"};
+public class Config {
 
-        [JsonProperty("logSkipped")]
-        public bool LogSkipped = true;
+    [JsonProperty("exclude")]
+    public string[] ExcludedFiles = {"bin/", "obj/"};
 
-        [JsonProperty("overrides")]
-        public Dictionary<string, Override> Overrides = new Dictionary<string, Override>();
+    [JsonProperty("logSkipped")]
+    public bool LogSkipped = true;
 
-    }
+    [JsonProperty("overrides")]
+    public Dictionary<string, Override> Overrides = new();
 
-    public class Override {
+}
 
-        [JsonProperty("importer")]
-        public string Importer;
-        [JsonProperty("processor")]
-        public string Processor;
-        [JsonProperty("processorParams")]
-        public Dictionary<string, string> ProcessorParams = new Dictionary<string, string>();
-        [JsonProperty("copy")]
-        public bool Copy;
+public class Override {
 
-    }
+    [JsonProperty("importer")]
+    public string Importer;
+    [JsonProperty("processor")]
+    public string Processor;
+    [JsonProperty("processorParams")]
+    public Dictionary<string, string> ProcessorParams = new();
+    [JsonProperty("copy")]
+    public bool Copy;
+
 }

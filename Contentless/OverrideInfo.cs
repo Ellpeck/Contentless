@@ -1,15 +1,15 @@
 using System.Text.RegularExpressions;
 
-namespace Contentless {
-    public class OverrideInfo {
+namespace Contentless; 
 
-        public readonly Regex Regex;
-        public readonly Override Override;
+public class OverrideInfo {
 
-        public OverrideInfo(Regex regex, Override over) {
-            this.Regex = regex;
-            this.Override = over;
-        }
+    public readonly Regex Regex;
+    public readonly Override Override;
 
+    public OverrideInfo(Regex regex, Override over) {
+        this.Regex = regex;
+        this.Override = over;
     }
+
 }

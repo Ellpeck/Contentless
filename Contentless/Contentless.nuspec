@@ -7,18 +7,18 @@
         <tags>monogame mono xna content pipeline mgcb builder tool library</tags>
         <projectUrl>https://github.com/Ellpeck/Contentless</projectUrl>
         <license type="expression">MIT</license>
-        <repository type="git" url="https://github.com/Ellpeck/Contentless"/>
+        <repository type="git" url="https://github.com/Ellpeck/Contentless" />
         <readme>README.md</readme>
         <icon>Logo.png</icon>
         <version>3.0.6</version>
         <dependencies>
-            <group targetFramework="net5.0" />
+            <group targetFramework="net6.0" />
         </dependencies>
     </metadata>
     <files>
-        <file src="_._" target="lib/net5.0/"/>
-        <file src="Contentless.targets" target="build/Contentless.targets"/>
-        <file src="bin\Debug\net5.0\**\*" target="tools/"/>
+        <file src="_._" target="lib/net6.0/" />
+        <file src="Contentless.targets" target="build/Contentless.targets" />
+        <file src="bin\Debug\net6.0\**\*" target="tools/" />
         <file src="../README.md" target="" />
         <file src="../Logo.png" target="" />
     </files>
