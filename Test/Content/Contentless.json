@@ -5,6 +5,7 @@
         "Ex*.png"
     ],
     "logSkipped": false,
+    "references": ["monogame.extended.content.pipeline"],
     "overrides": {
         "Copy.*": {
             "copy": true
