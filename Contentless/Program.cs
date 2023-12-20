@@ -87,7 +87,7 @@ public static class Program {
                 var fullLibraryPath = CalculateFullPathToLibrary(libraryName, referencesVersions[libraryName]);
                 if (reference != fullLibraryPath)
                 {
-                    Console.WriteLine($"Change library reference from {reference} to {fullLibraryPath}");
+                    Console.WriteLine($"Changing library reference from {reference} to {fullLibraryPath}");
                     reference = fullLibraryPath;
                     content[i] = ReferenceHeader + fullLibraryPath;
                     changed = true;
