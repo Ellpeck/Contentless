@@ -44,8 +44,8 @@ public static class Program {
         var excluded = config.ExcludedFiles.Select(Program.MakeFileRegex).ToArray();
         var overrides = Program.GetOverrides(config.Overrides).ToArray();
 
-        var referencesVersions = config.References.ToList().ToDictionary(x => x, x => (string)null, StringComparer.OrdinalIgnoreCase);
-        if (config.References.Any())
+        var referencesVersions = config.References.ToDictionary(x => x, x => (string)null, StringComparer.OrdinalIgnoreCase);
+        if (config.References.Length > 0)
         {
             var csprojPath = args[1];
             Console.WriteLine($"Using project file {csprojPath}");
@@ -54,11 +54,9 @@ public static class Program {
             {
                 var libraryName = property.Include;
                 var version = (property.Children.First() as ProjectMetadataElement).Value;
-                if (config.References.Any(x => x.Equals(libraryName, StringComparison.InvariantCultureIgnoreCase)))
                 if (referencesVersions.Keys.Contains(libraryName))
                 {
                     referencesVersions[libraryName] = version;
-                    //syncingReferences.Add(libraryName, version);
                     Console.WriteLine($"Found library version for sync: {libraryName}, {version}");
                 }
             }
