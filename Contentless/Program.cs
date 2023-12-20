@@ -48,7 +48,7 @@ public static class Program {
         if (config.References.Length > 0)
         {
             if (args.Length < 2) {
-                Console.WriteLine("Please specify the full path of project file, you want to use");
+                Console.WriteLine("You supplied references but there is no project file, this isn't compatible. Please specify the full path of project file, if you want to sync references");
                 return;
             }
             var csprojPath = args[1];
