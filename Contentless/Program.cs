@@ -47,6 +47,10 @@ public static class Program {
         var referencesVersions = config.References.ToDictionary(x => x, x => (string)null, StringComparer.OrdinalIgnoreCase);
         if (config.References.Length > 0)
         {
+            if (args.Length < 2) {
+                Console.WriteLine("Please specify the full path of project file, you want to use");
+                return;
+            }
             var csprojPath = args[1];
             Console.WriteLine($"Using project file {csprojPath}");
             var projectRootElement = ProjectRootElement.Open(csprojPath);
