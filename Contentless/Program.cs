@@ -4,15 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Microsoft.Build.Construction;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using Newtonsoft.Json;
+using NuGet.Configuration;
 
 namespace Contentless;
 
 public static class Program {
-
     public static void Main(string[] args) {
-        if (args.Length != 1) {
+        if (args.Length < 1) {
             Console.WriteLine("Please specify the location of the content file you want to use");
             return;
         }
@@ -43,11 +44,62 @@ public static class Program {
         var excluded = config.ExcludedFiles.Select(Program.MakeFileRegex).ToArray();
         var overrides = Program.GetOverrides(config.Overrides).ToArray();
 
+        var referencesVersions = config.References.ToList().ToDictionary(x => x, x => (string)null, StringComparer.OrdinalIgnoreCase);
+        if (config.References.Any())
+        {
+            var csprojPath = args[1];
+            Console.WriteLine($"Using project file {csprojPath}");
+            var projectRootElement = ProjectRootElement.Open(csprojPath);
+            foreach (var property in projectRootElement.AllChildren.Where(x => x.ElementName == "PackageReference").Select(x => x as ProjectItemElement))
+            {
+                var libraryName = property.Include;
+                var version = (property.Children.First() as ProjectMetadataElement).Value;
+                if (config.References.Any(x => x.Equals(libraryName, StringComparison.InvariantCultureIgnoreCase)))
+                if (referencesVersions.Keys.Contains(libraryName))
+                {
+                    referencesVersions[libraryName] = version;
+                    //syncingReferences.Add(libraryName, version);
+                    Console.WriteLine($"Found library version for sync: {libraryName}, {version}");
+                }
+            }
+
+            foreach (var library in referencesVersions)
+                if (library.Value is null)
+                {
+                    Console.WriteLine($"Unable to find library {library.Key}");
+                    return;
+                }
+        }
+        
+        var changed = false;
+        var referencesSyncs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         // load any references to be able to include custom content types as well
-        foreach (var line in content) {
-            if (!line.StartsWith("/reference:"))
+        for (int i = 0; i < content.Count; i++)
+        {
+            const string REFERENCE_HEADER = "/reference:";
+            
+            var line = content[i];
+            if (!line.StartsWith(REFERENCE_HEADER))
                 continue;
-            var reference = line.Substring(11);
+            var reference = line.Substring(REFERENCE_HEADER.Length);
+            var libraryName = Path.GetFileName(reference)[..^4];
+
+            if (referencesVersions.Keys.Contains(libraryName))
+            {
+                var fullLibraryPath = CalculateFullPathToLibrary(libraryName, referencesVersions[libraryName]);
+                if (reference != fullLibraryPath)
+                {
+                    Console.WriteLine($"Change library reference from {reference} to {fullLibraryPath}");
+                    reference = fullLibraryPath;
+                    content[i] = REFERENCE_HEADER + fullLibraryPath;
+                    changed = true;
+                }
+                else
+                    Console.WriteLine($"Skipping library reference {fullLibraryPath} (success sync)");
+
+                referencesSyncs.Add(libraryName);
+            }
+            
             var refPath = Path.GetFullPath(Path.Combine(contentFile.DirectoryName, reference));
             try {
                 Assembly.LoadFrom(refPath);
@@ -57,12 +109,20 @@ public static class Program {
             }
         }
 
+        // check references not in .mgcb now
+        foreach (var reference in referencesVersions)
+            if (!referencesSyncs.Contains(reference.Key))
+            {
+                Console.WriteLine($"Please, add reference for {reference.Key} in .mgcb file or remove it from Contentless! Reference was skipped!");
+                return;
+            }
+        
+
         // load content importers
         var (importers, processors) = Program.GetContentData();
         Console.WriteLine($"Found possible importer types {string.Join(", ", importers)}");
         Console.WriteLine($"Found possible processor types {string.Join(", ", processors)}");
 
-        var changed = false;
         foreach (var file in contentFile.Directory.EnumerateFiles("*", SearchOption.AllDirectories)) {
             // is the file the content or config file?
             if (file.Name == contentFile.Name || file.Name == configFile.Name)
@@ -140,6 +200,12 @@ public static class Program {
             Console.WriteLine("Wrote changes to content file");
         }
         Console.Write("Done");
+    }
+
+    private static string CalculateFullPathToLibrary(string libraryName, string referencesVersion)
+    {
+        var settings = Settings.LoadDefaultSettings(null);
+        return Path.Combine(SettingsUtility.GetGlobalPackagesFolder(settings), libraryName.ToLower(), referencesVersion, "tools", libraryName + ".dll");
     }
 
     private static (List<ImporterInfo>, List<string>) GetContentData() {
