@@ -4,7 +4,7 @@
         "bin/",
         "Ex*.png"
     ],
-    "logSkipped": false,
+    "logSkipped": true,
     "overrides": {
         "Copy.*": {
             "copy": true

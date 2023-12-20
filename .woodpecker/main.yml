@@ -1,0 +1,9 @@
+﻿steps:
+  build:
+    image: mcr.microsoft.com/dotnet/sdk:6.0
+    commands:
+      - dotnet build Contentless
+  test:
+    image: mcr.microsoft.com/dotnet/sdk:6.0
+    commands:
+      - dotnet run --project Contentless Test/Content/Contentless.mgcb
