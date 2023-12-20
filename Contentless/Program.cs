@@ -74,12 +74,12 @@ public static class Program {
         // load any references to be able to include custom content types as well
         for (int i = 0; i < content.Count; i++)
         {
-            const string REFERENCE_HEADER = "/reference:";
+            const string ReferenceHeader = "/reference:";
             
             var line = content[i];
-            if (!line.StartsWith(REFERENCE_HEADER))
+            if (!line.StartsWith(ReferenceHeader))
                 continue;
-            var reference = line.Substring(REFERENCE_HEADER.Length);
+            var reference = line.Substring(ReferenceHeader.Length);
             var libraryName = Path.GetFileName(reference)[..^4];
 
             if (referencesVersions.Keys.Contains(libraryName))
@@ -89,7 +89,7 @@ public static class Program {
                 {
                     Console.WriteLine($"Change library reference from {reference} to {fullLibraryPath}");
                     reference = fullLibraryPath;
-                    content[i] = REFERENCE_HEADER + fullLibraryPath;
+                    content[i] = ReferenceHeader + fullLibraryPath;
                     changed = true;
                 }
                 else
