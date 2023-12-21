@@ -20,8 +20,8 @@ public static class Program {
         }
 
         var contentFile = new FileInfo(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, args[0])));
-        if (!contentFile.Exists) {
-            Console.Error.WriteLine($"Unable to find content file {contentFile}");
+        if (!contentFile.Exists || contentFile.Extension != ".mgcb") {
+            Console.Error.WriteLine($"Unable to find valid content file at {contentFile}");
             return;
         }
 
@@ -50,6 +50,10 @@ public static class Program {
         if (config.References.Length > 0) {
             if (args.Length > 1) {
                 var csprojFullPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, args[1]));
+                if (!File.Exists(csprojFullPath) || Path.GetExtension(csprojFullPath) != ".csproj") {
+                    Console.Error.WriteLine($"Unable to find valid project file at {contentFile}");
+                    return;
+                }
                 Program.ExtractVersions(csprojFullPath, referencesVersions);
                 var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(csprojFullPath));
                 packagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
