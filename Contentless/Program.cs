@@ -13,16 +13,16 @@ namespace Contentless;
 
 public static class Program {
 
-    public static void Main(string[] args) {
+    public static int Main(string[] args) {
         if (args.Length < 1) {
             Console.Error.WriteLine("Please specify the location of the content file you want to use");
-            return;
+            return 1;
         }
 
         var contentFile = new FileInfo(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, args[0])));
         if (!contentFile.Exists || contentFile.Extension != ".mgcb") {
             Console.Error.WriteLine($"Unable to find valid content file at {contentFile}");
-            return;
+            return 1;
         }
 
         Console.WriteLine($"Using content file {contentFile}");
@@ -38,6 +38,7 @@ public static class Program {
                 Console.WriteLine($"Using config from {configFile}");
             } catch (Exception e) {
                 Console.Error.WriteLine($"Error loading config from {configFile}: {e}");
+                return 1;
             }
         } else {
             Console.WriteLine("Using default config");
@@ -52,7 +53,7 @@ public static class Program {
                 var csprojFullPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, args[1]));
                 if (!File.Exists(csprojFullPath) || Path.GetExtension(csprojFullPath) != ".csproj") {
                     Console.Error.WriteLine($"Unable to find valid project file at {contentFile}");
-                    return;
+                    return 1;
                 }
                 Program.ExtractVersions(csprojFullPath, referencesVersions);
                 var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(csprojFullPath));
@@ -200,6 +201,7 @@ public static class Program {
             Console.WriteLine("Wrote changes to content file");
         }
         Console.Write("Done");
+        return 0;
     }
 
     private static void SafeAssemblyLoad(string refPath) {
