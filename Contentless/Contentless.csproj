@@ -4,6 +4,7 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
         <RollForward>Major</RollForward>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
     
     <PropertyGroup>
@@ -18,6 +19,12 @@
             <PrivateAssets>All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1">
+            <PrivateAssets>All</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Build" Version="17.3.2">
+            <PrivateAssets>All</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="NuGet.Configuration" Version="6.8.0">
             <PrivateAssets>All</PrivateAssets>
         </PackageReference>
     </ItemGroup>

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
@@ -13,7 +14,9 @@ public class Config {
 
     [JsonProperty("overrides")]
     public Dictionary<string, Override> Overrides = new();
-
+    
+    [JsonProperty("references")] 
+    public string[] References = Array.Empty<string>();
 }
 
 public class Override {
