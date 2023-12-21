@@ -1,10 +1,10 @@
 ﻿steps:
   build:
-    image: mcr.microsoft.com/dotnet/sdk:6.0
+    image: mcr.microsoft.com/dotnet/sdk:8.0-jammy
     commands:
       - dotnet build Contentless
   test:
-    image: mcr.microsoft.com/dotnet/sdk:6.0
+    image: mcr.microsoft.com/dotnet/sdk:8.0-jammy
     commands:
       - dotnet restore Test
       - dotnet run --project Contentless Test/Content/Content.mgcb Test/Test.csproj

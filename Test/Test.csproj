@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <MonoGamePlatform>DesktopGL</MonoGamePlatform>
     </PropertyGroup>
 
@@ -12,6 +12,10 @@
 
     <ItemGroup>
         <MonoGameContentReference Include="Content\Content.mgcb" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Test\" />
     </ItemGroup>
 
 </Project>
