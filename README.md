@@ -59,7 +59,10 @@ If you want to change the way Contentless works, you can use a configuration fil
                 "TextureFormat": "Compressed"
             }
         }
-    }
+    },
+    // A set of content pipeline library references that should optionally be added to the content file, or whose paths should be changed in the content file if they don't match the project's package references
+    // Default: []
+    "references": ["MonoGame.Extended.Content.Pipeline"]
 }
 ```
 For an example of a config in use, see the [test config](https://github.com/Ellpeck/Contentless/blob/main/Test/Content/Contentless.json).
