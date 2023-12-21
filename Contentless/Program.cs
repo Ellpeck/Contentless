@@ -49,8 +49,9 @@ public static class Program {
         var referencesVersions = config.References.ToDictionary(x => x, _ => (string) null, StringComparer.OrdinalIgnoreCase);
         if (config.References.Length > 0) {
             if (args.Length > 1) {
-                Program.ExtractVersions(args[1], referencesVersions);
-                var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(args[1]));
+                var csprojFullPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, args[1]));
+                Program.ExtractVersions(csprojFullPath, referencesVersions);
+                var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(csprojFullPath));
                 packagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
             } else {
                 Console.Error.WriteLine("The config file contains references, but no project file was specified. Please specify the location of the content file you want to use for gathering references as the second argument.");
