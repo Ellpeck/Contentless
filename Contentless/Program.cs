@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using Microsoft.Build.Construction;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using Newtonsoft.Json;
-using NuGet.Configuration;
 
 namespace Contentless;
 
@@ -47,8 +46,11 @@ public static class Program {
         var referencesVersions = config.References.ToDictionary(x => x, x => (string)null, StringComparer.OrdinalIgnoreCase);
         if (config.References.Length > 0)
         {
-            if (args.Length > 1) 
+            if (args.Length > 1)
+            {
                 ExtractVersions(args[1], referencesVersions);
+                _nuGetHelper = new NuGetHelper(Path.GetDirectoryName(args[1]));
+            }
             else
                 Console.Error.WriteLine("You supplied references but there is no project file, this isn't compatible. Please specify the full path of project file, if you want to sync references");
         }
@@ -233,10 +235,11 @@ public static class Program {
                 Console.Error.WriteLine($"Unable to find library {library.Key} in .csproj");
     }
 
+    private static NuGetHelper _nuGetHelper;
+
     private static string CalculateFullPathToLibrary(string libraryName, string referencesVersion)
     {
-        var settings = Settings.LoadDefaultSettings(null);
-        return Path.Combine(SettingsUtility.GetGlobalPackagesFolder(settings), libraryName.ToLower(), referencesVersion, "tools", libraryName + ".dll");
+        return Path.Combine(_nuGetHelper.PackageFolder, libraryName.ToLower(), referencesVersion, "tools", libraryName + ".dll");
     }
 
     private static (List<ImporterInfo>, List<string>) GetContentData() {
