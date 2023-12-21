@@ -6,4 +6,5 @@
   test:
     image: mcr.microsoft.com/dotnet/sdk:6.0
     commands:
-      - dotnet run --project Contentless Test/Content/Content.mgcb
+      - dotnet run --project Contentless Test/Content/Content.mgcb Test/Test.csproj
+      - dotnet build Test
