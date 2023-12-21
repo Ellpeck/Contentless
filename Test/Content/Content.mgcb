@@ -10,7 +10,7 @@
 
 #-------------------------------- References --------------------------------#
 
-/reference:C:/Users/me/.nuget/packages/monogame.extended.content.pipeline/3.8.0/tools/MonoGame.Extended.Content.Pipeline.dll
+/reference:C:/Users/me/.nuget/packages/monogame.extended.content.pipeline/3.9.0-alpha0093/tools/MonoGame.Extended.Content.Pipeline.dll
 
 #---------------------------------- Content ---------------------------------#
 
@@ -41,12 +41,6 @@
 /importer:TiledMapImporter
 /processor:TiledMapProcessor
 /build:Tiled/Map.tmx
-
-#begin Tiled/Tiles.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:TextureFormat=NoChange
-/build:Tiled/Tiles.png
 
 #begin Tiled/Tileset.tsx
 /importer:TiledMapTilesetImporter
