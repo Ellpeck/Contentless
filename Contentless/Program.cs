@@ -47,30 +47,10 @@ public static class Program {
         var referencesVersions = config.References.ToDictionary(x => x, x => (string)null, StringComparer.OrdinalIgnoreCase);
         if (config.References.Length > 0)
         {
-            if (args.Length < 2) {
-                Console.WriteLine("You supplied references but there is no project file, this isn't compatible. Please specify the full path of project file, if you want to sync references");
-                return;
-            }
-            var csprojPath = args[1];
-            Console.WriteLine($"Using project file {csprojPath}");
-            var projectRootElement = ProjectRootElement.Open(csprojPath);
-            foreach (var property in projectRootElement.AllChildren.Where(x => x.ElementName == "PackageReference").Select(x => x as ProjectItemElement))
-            {
-                var libraryName = property.Include;
-                var version = (property.Children.First() as ProjectMetadataElement).Value;
-                if (referencesVersions.Keys.Contains(libraryName))
-                {
-                    referencesVersions[libraryName] = version;
-                    Console.WriteLine($"Found library version for sync: {libraryName}, {version}");
-                }
-            }
-
-            foreach (var library in referencesVersions)
-                if (library.Value is null)
-                {
-                    Console.WriteLine($"Unable to find library {library.Key}");
-                    return;
-                }
+            if (args.Length > 1) 
+                ExtractVersions(args[1], referencesVersions);
+            else
+                Console.Error.WriteLine("You supplied references but there is no project file, this isn't compatible. Please specify the full path of project file, if you want to sync references");
         }
         
         var changed = false;
@@ -86,9 +66,9 @@ public static class Program {
             var reference = line.Substring(ReferenceHeader.Length);
             var libraryName = Path.GetFileName(reference)[..^4];
 
-            if (referencesVersions.Keys.Contains(libraryName))
+            if (referencesVersions.TryGetValue(libraryName, out var version) && version is not null)
             {
-                var fullLibraryPath = CalculateFullPathToLibrary(libraryName, referencesVersions[libraryName]);
+                var fullLibraryPath = CalculateFullPathToLibrary(libraryName, version);
                 if (reference != fullLibraryPath)
                 {
                     Console.WriteLine($"Changing library reference from {reference} to {fullLibraryPath}");
@@ -114,10 +94,7 @@ public static class Program {
         // check references not in .mgcb now
         foreach (var reference in referencesVersions)
             if (!referencesSyncs.Contains(reference.Key))
-            {
-                Console.WriteLine($"Please, add reference for {reference.Key} in .mgcb file or remove it from Contentless! Reference was skipped!");
-                return;
-            }
+                Console.Error.WriteLine($"Please, add reference for {reference.Key} in .mgcb file or remove it from Contentless! Reference was skipped!");
         
 
         // load content importers
@@ -202,6 +179,26 @@ public static class Program {
             Console.WriteLine("Wrote changes to content file");
         }
         Console.Write("Done");
+    }
+
+    private static void ExtractVersions(string csprojPath, Dictionary<string, string> referencesVersions)
+    {
+        Console.WriteLine($"Using project file {csprojPath}");
+        var projectRootElement = ProjectRootElement.Open(csprojPath);
+        foreach (var property in projectRootElement.AllChildren.Where(x => x.ElementName == "PackageReference").Select(x => x as ProjectItemElement))
+        {
+            var libraryName = property.Include;
+            var version = (property.Children.First() as ProjectMetadataElement).Value;
+            if (referencesVersions.Keys.Contains(libraryName))
+            {
+                referencesVersions[libraryName] = version;
+                Console.WriteLine($"Found library version for sync: {libraryName}, {version}");
+            }
+        }
+
+        foreach (var library in referencesVersions)
+            if (library.Value is null) 
+                Console.Error.WriteLine($"Unable to find library {library.Key} in .csproj");
     }
 
     private static string CalculateFullPathToLibrary(string libraryName, string referencesVersion)
