@@ -214,7 +214,9 @@ public static class Program {
         foreach (var property in projectRootElement.AllChildren.Where(x => x.ElementName == "PackageReference").Select(x => x as ProjectItemElement))
         {
             var libraryName = property.Include;
-            var version = (property.Children.First() as ProjectMetadataElement).Value;
+            if (property.Children.FirstOrDefault(x => x.ElementName == "Version") is not ProjectMetadataElement versionElement)
+                continue;
+            var version = versionElement.Value;
             if (referencesVersions.Keys.Contains(libraryName))
             {
                 referencesVersions[libraryName] = version;
