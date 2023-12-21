@@ -12,13 +12,13 @@
         <icon>Logo.png</icon>
         <version>3.0.7</version>
         <dependencies>
-            <group targetFramework="net6.0" />
+            <group targetFramework="net8.0" />
         </dependencies>
     </metadata>
     <files>
-        <file src="_._" target="lib/net6.0/" />
+        <file src="_._" target="lib/net8.0/" />
         <file src="Contentless.targets" target="build/Contentless.targets" />
-        <file src="bin\Debug\net6.0\**\*" target="tools/" />
+        <file src="bin\Debug\net8.0\**\*" target="tools/" />
         <file src="../README.md" target="" />
         <file src="../Logo.png" target="" />
     </files>
