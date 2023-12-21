@@ -53,13 +53,12 @@ public static class Program {
                 Console.Error.WriteLine("You supplied references but there is no project file, this isn't compatible. Please specify the full path of project file, if you want to sync references");
         }
         
+        const string ReferenceHeader = "/reference:";
         var changed = false;
         var referencesSyncs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         // load any references to be able to include custom content types as well
         for (int i = 0; i < content.Count; i++)
         {
-            const string ReferenceHeader = "/reference:";
-            
             var line = content[i];
             if (!line.StartsWith(ReferenceHeader))
                 continue;
@@ -83,18 +82,41 @@ public static class Program {
             }
             
             var refPath = Path.GetFullPath(Path.Combine(contentFile.DirectoryName, reference));
-            try {
-                Assembly.LoadFrom(refPath);
-                Console.WriteLine($"Using reference {refPath}");
-            } catch (Exception e) {
-                Console.WriteLine($"Error loading reference {refPath}: {e}");
-            }
+            SafeAssemblyLoad(refPath);
         }
 
         // check references not in .mgcb now
+        var referencesLastIndex = 0;
+        // find place where I can add new reference
+        for (int i = 0; i < content.Count; i++)
+        {
+            var line = content[i];
+            if (line.StartsWith(ReferenceHeader))
+                referencesLastIndex = i + 1;
+            else if (line.StartsWith("/importer:") || line.StartsWith("/processor:") || line.StartsWith("/build:") ||
+                     line.Contains("-- Content --"))
+            {
+                if (referencesLastIndex == 0)
+                    referencesLastIndex = i;
+                break;
+            }
+        }
         foreach (var reference in referencesVersions)
-            if (!referencesSyncs.Contains(reference.Key))
-                Console.Error.WriteLine($"Please, add reference for {reference.Key} in .mgcb file or remove it from Contentless! Reference was skipped!");
+            if (!referencesSyncs.Contains(reference.Key) && reference.Value is not null)
+            {
+                try
+                {
+                    var path = CalculateFullPathToLibrary(reference.Key, reference.Value);
+                    content.Insert(referencesLastIndex++, ReferenceHeader + path);
+                    changed = true;
+                    SafeAssemblyLoad(path);
+                    Console.WriteLine($"Adding reference for {path} in .mgcb");
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine($"Error adding library {reference.Key} in .mgcb: {e}");
+                }
+            }
         
 
         // load content importers
@@ -179,6 +201,16 @@ public static class Program {
             Console.WriteLine("Wrote changes to content file");
         }
         Console.Write("Done");
+    }
+
+    private static void SafeAssemblyLoad(string refPath)
+    {
+        try {
+            Assembly.LoadFrom(refPath);
+            Console.WriteLine($"Using reference {refPath}");
+        } catch (Exception e) {
+            Console.WriteLine($"Error loading reference {refPath}: {e}");
+        }
     }
 
     private static void ExtractVersions(string csprojPath, Dictionary<string, string> referencesVersions)
