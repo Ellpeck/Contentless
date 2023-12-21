@@ -7,19 +7,21 @@ using System.Text.RegularExpressions;
 using Microsoft.Build.Construction;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using Newtonsoft.Json;
+using NuGet.Configuration;
 
 namespace Contentless;
 
 public static class Program {
+
     public static void Main(string[] args) {
         if (args.Length < 1) {
-            Console.WriteLine("Please specify the location of the content file you want to use");
+            Console.Error.WriteLine("Please specify the location of the content file you want to use");
             return;
         }
 
         var contentFile = new FileInfo(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, args[0])));
         if (!contentFile.Exists) {
-            Console.WriteLine($"Unable to find content file {contentFile}");
+            Console.Error.WriteLine($"Unable to find content file {contentFile}");
             return;
         }
 
@@ -35,7 +37,7 @@ public static class Program {
                 config = JsonConvert.DeserializeObject<Config>(stream.ReadToEnd());
                 Console.WriteLine($"Using config from {configFile}");
             } catch (Exception e) {
-                Console.WriteLine($"Error loading config from {configFile}: {e}");
+                Console.Error.WriteLine($"Error loading config from {configFile}: {e}");
             }
         } else {
             Console.WriteLine("Using default config");
@@ -43,55 +45,56 @@ public static class Program {
         var excluded = config.ExcludedFiles.Select(Program.MakeFileRegex).ToArray();
         var overrides = Program.GetOverrides(config.Overrides).ToArray();
 
-        var referencesVersions = config.References.ToDictionary(x => x, x => (string)null, StringComparer.OrdinalIgnoreCase);
+        string packagesFolder = null;
+        var referencesVersions = config.References.ToDictionary(x => x, _ => (string) null, StringComparer.OrdinalIgnoreCase);
         if (config.References.Length > 0) {
             if (args.Length > 1) {
-                ExtractVersions(args[1], referencesVersions);
-                _nuGetHelper = new NuGetHelper(Path.GetDirectoryName(args[1]));
+                Program.ExtractVersions(args[1], referencesVersions);
+                var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(args[1]));
+                packagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+            } else {
+                Console.Error.WriteLine("The config file contains references, but no project file was specified. Please specify the location of the content file you want to use for gathering references as the second argument.");
             }
-            else
-                Console.Error.WriteLine("You supplied references but there is no project file, this isn't compatible. Please specify the full path of project file, if you want to sync references");
         }
-        
-        const string ReferenceHeader = "/reference:";
+
+        const string referenceHeader = "/reference:";
         var changed = false;
         var referencesSyncs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         // load any references to be able to include custom content types as well
-        for (int i = 0; i < content.Count; i++) {
+        for (var i = 0; i < content.Count; i++) {
             var line = content[i];
-            if (!line.StartsWith(ReferenceHeader))
+            if (!line.StartsWith(referenceHeader))
                 continue;
-            var reference = line.Substring(ReferenceHeader.Length);
+            var reference = line[referenceHeader.Length..];
             var libraryName = Path.GetFileName(reference)[..^4];
 
             if (referencesVersions.TryGetValue(libraryName, out var version) && version is not null) {
-                var fullLibraryPath = CalculateFullPathToLibrary(libraryName, version);
+                var fullLibraryPath = Program.CalculateFullPathToLibrary(packagesFolder, libraryName, version);
                 if (reference != fullLibraryPath) {
-                    Console.WriteLine($"Changing library reference from {reference} to {fullLibraryPath}");
+                    Console.WriteLine($"Changing reference from {reference} to {fullLibraryPath}");
                     reference = fullLibraryPath;
-                    content[i] = ReferenceHeader + fullLibraryPath;
+                    content[i] = referenceHeader + fullLibraryPath;
                     changed = true;
+                } else {
+                    if (config.LogSkipped)
+                        Console.WriteLine($"Skipping reference {fullLibraryPath} which already matched");
                 }
-                else
-                    Console.WriteLine($"Skipping library reference {fullLibraryPath} (success sync)");
-
                 referencesSyncs.Add(libraryName);
             }
-            
+
             var refPath = Path.GetFullPath(Path.Combine(contentFile.DirectoryName, reference));
-            SafeAssemblyLoad(refPath);
+            Program.SafeAssemblyLoad(refPath);
+            Console.WriteLine($"Using reference {refPath}");
         }
 
         // check references not in .mgcb now
         var referencesLastIndex = 0;
         // find place where I can add new reference
-        for (int i = 0; i < content.Count; i++)
-        {
+        for (var i = 0; i < content.Count; i++) {
             var line = content[i];
-            if (line.StartsWith(ReferenceHeader))
+            if (line.StartsWith(referenceHeader))
                 referencesLastIndex = i + 1;
-            else if (line.StartsWith("/importer:") || line.StartsWith("/processor:") || line.StartsWith("/build:") ||
-                     line.Contains("-- Content --")) {
+            else if (line.StartsWith("/importer:") || line.StartsWith("/processor:") || line.StartsWith("/build:") || line.Contains("-- Content --")) {
                 if (referencesLastIndex == 0)
                     referencesLastIndex = i;
                 break;
@@ -100,18 +103,15 @@ public static class Program {
         foreach (var reference in referencesVersions)
             if (!referencesSyncs.Contains(reference.Key) && reference.Value is not null) {
                 try {
-                    var path = CalculateFullPathToLibrary(reference.Key, reference.Value);
-                    content.Insert(referencesLastIndex++, ReferenceHeader + path);
+                    var path = Program.CalculateFullPathToLibrary(packagesFolder, reference.Key, reference.Value);
+                    content.Insert(referencesLastIndex++, referenceHeader + path);
                     changed = true;
-                    SafeAssemblyLoad(path);
-                    Console.WriteLine($"Adding reference for {path} in .mgcb");
-                }
-                catch (Exception e)
-                {
-                    Console.Error.WriteLine($"Error adding library {reference.Key} in .mgcb: {e}");
+                    Program.SafeAssemblyLoad(path);
+                    Console.WriteLine($"Adding reference {path}");
+                } catch (Exception e) {
+                    Console.Error.WriteLine($"Error adding reference {reference.Key} {e}");
                 }
             }
-        
 
         // load content importers
         var (importers, processors) = Program.GetContentData();
@@ -157,7 +157,7 @@ public static class Program {
                 if (!string.IsNullOrEmpty(over.Override.Importer)) {
                     importer = importers.Find(i => i.Type.Name == over.Override.Importer);
                     if (importer == null) {
-                        Console.WriteLine($"Override importer {over.Override.Importer} not found for file {relative}");
+                        Console.Error.WriteLine($"Override importer {over.Override.Importer} not found for file {relative}");
                         continue;
                     }
                 }
@@ -165,7 +165,7 @@ public static class Program {
                 if (!string.IsNullOrEmpty(over.Override.Processor)) {
                     processor = processors.Find(p => p == over.Override.Processor);
                     if (processor == null) {
-                        Console.WriteLine($"Override processor {over.Override.Processor} not found for file {relative}");
+                        Console.Error.WriteLine($"Override processor {over.Override.Processor} not found for file {relative}");
                         continue;
                     }
                 }
@@ -178,7 +178,7 @@ public static class Program {
 
             // no importer found :(
             if (importer == null || processor == null) {
-                Console.WriteLine($"No importer or processor found for file {relative}");
+                Console.Error.WriteLine($"No importer or processor found for file {relative}");
                 continue;
             }
 
@@ -197,43 +197,35 @@ public static class Program {
         Console.Write("Done");
     }
 
-    private static void SafeAssemblyLoad(string refPath)
-    {
+    private static void SafeAssemblyLoad(string refPath) {
         try {
             Assembly.LoadFrom(refPath);
-            Console.WriteLine($"Using reference {refPath}");
         } catch (Exception e) {
-            Console.WriteLine($"Error loading reference {refPath}: {e}");
+            Console.Error.WriteLine($"Error loading reference {refPath} {e}");
         }
     }
 
-    private static void ExtractVersions(string csprojPath, Dictionary<string, string> referencesVersions)
-    {
+    private static void ExtractVersions(string csprojPath, Dictionary<string, string> referencesVersions) {
         Console.WriteLine($"Using project file {csprojPath}");
         var projectRootElement = ProjectRootElement.Open(csprojPath);
-        foreach (var property in projectRootElement.AllChildren.Where(x => x.ElementName == "PackageReference").Select(x => x as ProjectItemElement))
-        {
+        foreach (var property in projectRootElement.AllChildren.Where(x => x.ElementName == "PackageReference").Select(x => x as ProjectItemElement)) {
             var libraryName = property.Include;
             if (property.Children.FirstOrDefault(x => x.ElementName == "Version") is not ProjectMetadataElement versionElement)
                 continue;
             var version = versionElement.Value;
-            if (referencesVersions.Keys.Contains(libraryName))
-            {
+            if (referencesVersions.ContainsKey(libraryName)) {
                 referencesVersions[libraryName] = version;
-                Console.WriteLine($"Found library version for sync: {libraryName}, {version}");
+                Console.WriteLine($"Found reference {libraryName} {version} in project file");
             }
         }
 
         foreach (var library in referencesVersions)
-            if (library.Value is null) 
-                Console.Error.WriteLine($"Unable to find library {library.Key} in .csproj");
+            if (library.Value is null)
+                Console.Error.WriteLine($"Unable to find reference {library.Key} in project file");
     }
 
-    private static NuGetHelper _nuGetHelper;
-
-    private static string CalculateFullPathToLibrary(string libraryName, string referencesVersion)
-    {
-        return Path.Combine(_nuGetHelper.PackageFolder, libraryName.ToLower(), referencesVersion, "tools", libraryName + ".dll");
+    private static string CalculateFullPathToLibrary(string packageFolder, string libraryName, string referencesVersion) {
+        return Path.Combine(packageFolder, libraryName.ToLower(), referencesVersion, "tools", libraryName + ".dll");
     }
 
     private static (List<ImporterInfo>, List<string>) GetContentData() {
@@ -250,7 +242,7 @@ public static class Program {
                         processors.Add(type.Name);
                 }
             } catch (Exception e) {
-                Console.WriteLine($"Error gathering types in reference {assembly}: {e}");
+                Console.Error.WriteLine($"Error gathering types in reference {assembly}: {e}");
             }
         }
         return (importers, processors);
