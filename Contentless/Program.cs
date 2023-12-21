@@ -77,7 +77,7 @@ public static class Program {
                     changed = true;
                 } else {
                     if (config.LogSkipped)
-                        Console.WriteLine($"Skipping reference {fullLibraryPath} which already matched");
+                        Console.WriteLine($"Skipping reference replacement for {fullLibraryPath} which already matched");
                 }
                 referencesSyncs.Add(libraryName);
             }
@@ -92,9 +92,9 @@ public static class Program {
         // find place where I can add new reference
         for (var i = 0; i < content.Count; i++) {
             var line = content[i];
-            if (line.StartsWith(referenceHeader))
+            if (line.StartsWith(referenceHeader)) {
                 referencesLastIndex = i + 1;
-            else if (line.StartsWith("/importer:") || line.StartsWith("/processor:") || line.StartsWith("/build:") || line.Contains("-- Content --")) {
+            } else if (line.StartsWith("/importer:") || line.StartsWith("/processor:") || line.StartsWith("/build:") || line.Contains("-- Content --")) {
                 if (referencesLastIndex == 0)
                     referencesLastIndex = i;
                 break;
@@ -122,7 +122,7 @@ public static class Program {
             // is the file the content or config file?
             if (file.Name == contentFile.Name || file.Name == configFile.Name)
                 continue;
-            var relative = Program.GetRelativePath(contentFile.DirectoryName, file.FullName).Replace("\\", "/");
+            var relative = Path.GetRelativePath(contentFile.DirectoryName, file.FullName).Replace('\\', '/');
 
             // is the file in an excluded directory?
             if (excluded.Any(e => e.IsMatch(relative))) {
@@ -225,7 +225,7 @@ public static class Program {
     }
 
     private static string CalculateFullPathToLibrary(string packageFolder, string libraryName, string referencesVersion) {
-        return Path.Combine(packageFolder, libraryName.ToLower(), referencesVersion, "tools", libraryName + ".dll");
+        return Path.Combine(packageFolder, libraryName.ToLowerInvariant(), referencesVersion, "tools", libraryName + ".dll").Replace('\\', '/');
     }
 
     private static (List<ImporterInfo>, List<string>) GetContentData() {
@@ -304,12 +304,6 @@ public static class Program {
         content.Add($"/copy:{relative}");
         content.Add("");
         Console.WriteLine($"Adding file {relative} with the Copy build action");
-    }
-
-    private static string GetRelativePath(string relativeTo, string path) {
-        if (!relativeTo.EndsWith(Path.DirectorySeparatorChar.ToString()))
-            relativeTo += Path.DirectorySeparatorChar;
-        return path.Replace(relativeTo, "");
     }
 
     private static Regex MakeFileRegex(string s) {
