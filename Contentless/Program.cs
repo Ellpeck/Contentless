@@ -44,10 +44,8 @@ public static class Program {
         var overrides = Program.GetOverrides(config.Overrides).ToArray();
 
         var referencesVersions = config.References.ToDictionary(x => x, x => (string)null, StringComparer.OrdinalIgnoreCase);
-        if (config.References.Length > 0)
-        {
-            if (args.Length > 1)
-            {
+        if (config.References.Length > 0) {
+            if (args.Length > 1) {
                 ExtractVersions(args[1], referencesVersions);
                 _nuGetHelper = new NuGetHelper(Path.GetDirectoryName(args[1]));
             }
@@ -59,19 +57,16 @@ public static class Program {
         var changed = false;
         var referencesSyncs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         // load any references to be able to include custom content types as well
-        for (int i = 0; i < content.Count; i++)
-        {
+        for (int i = 0; i < content.Count; i++) {
             var line = content[i];
             if (!line.StartsWith(ReferenceHeader))
                 continue;
             var reference = line.Substring(ReferenceHeader.Length);
             var libraryName = Path.GetFileName(reference)[..^4];
 
-            if (referencesVersions.TryGetValue(libraryName, out var version) && version is not null)
-            {
+            if (referencesVersions.TryGetValue(libraryName, out var version) && version is not null) {
                 var fullLibraryPath = CalculateFullPathToLibrary(libraryName, version);
-                if (reference != fullLibraryPath)
-                {
+                if (reference != fullLibraryPath) {
                     Console.WriteLine($"Changing library reference from {reference} to {fullLibraryPath}");
                     reference = fullLibraryPath;
                     content[i] = ReferenceHeader + fullLibraryPath;
@@ -96,18 +91,15 @@ public static class Program {
             if (line.StartsWith(ReferenceHeader))
                 referencesLastIndex = i + 1;
             else if (line.StartsWith("/importer:") || line.StartsWith("/processor:") || line.StartsWith("/build:") ||
-                     line.Contains("-- Content --"))
-            {
+                     line.Contains("-- Content --")) {
                 if (referencesLastIndex == 0)
                     referencesLastIndex = i;
                 break;
             }
         }
         foreach (var reference in referencesVersions)
-            if (!referencesSyncs.Contains(reference.Key) && reference.Value is not null)
-            {
-                try
-                {
+            if (!referencesSyncs.Contains(reference.Key) && reference.Value is not null) {
+                try {
                     var path = CalculateFullPathToLibrary(reference.Key, reference.Value);
                     content.Insert(referencesLastIndex++, ReferenceHeader + path);
                     changed = true;
