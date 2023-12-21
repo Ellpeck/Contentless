@@ -11,19 +11,15 @@
             "copy": true
         },
         ".json": {
-            "importer": "JsonContentImporter",
-            "processor": "FontTextureProcessor"
+            "copy": true
         },
         ".ogg": {
             "importer": "OggImporter",
             "processor": "SongProcessor"
         },
-        ".xml": {
-            "processor": "FontTextureProcessor"
-        },
         ".png": {
             "processorParams": {
-                "TextureFormat": "Compressed"
+                "TextureFormat": "NoChange"
             }
         }
     }

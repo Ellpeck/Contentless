@@ -13,29 +13,28 @@
 /reference:C:/Users/me/.nuget/packages/monogame.extended.content.pipeline/3.8.0/tools/MonoGame.Extended.Content.Pipeline.dll
 
 #---------------------------------- Content ---------------------------------#
+
 #begin Json/Copy.json
 /copy:Json/Copy.json
 
 #begin Json/Test.json
-/importer:JsonContentImporter
-/processor:FontTextureProcessor
-/build:Json/Test.json
+/copy:Json/Test.json
 
 #begin Locale/Interface.xml
 /importer:XmlImporter
-/processor:FontTextureProcessor
+/processor:PassThroughProcessor
 /build:Locale/Interface.xml
 
 #begin Textures/Icons.png
 /importer:TextureImporter
 /processor:TextureProcessor
-/processorParam:TextureFormat=Compressed
+/processorParam:TextureFormat=NoChange
 /build:Textures/Icons.png
 
 #begin Textures/Inside.png
 /importer:TextureImporter
 /processor:TextureProcessor
-/processorParam:TextureFormat=Compressed
+/processorParam:TextureFormat=NoChange
 /build:Textures/Inside.png
 
 #begin Tiled/Map.tmx
@@ -46,11 +45,10 @@
 #begin Tiled/Tiles.png
 /importer:TextureImporter
 /processor:TextureProcessor
-/processorParam:TextureFormat=Compressed
+/processorParam:TextureFormat=NoChange
 /build:Tiled/Tiles.png
 
 #begin Tiled/Tileset.tsx
 /importer:TiledMapTilesetImporter
 /processor:TiledMapTilesetProcessor
 /build:Tiled/Tileset.tsx
-
