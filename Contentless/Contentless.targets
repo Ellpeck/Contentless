@@ -1,5 +1,5 @@
 <Project>
-    <Target Name="Contentless" BeforeTargets="BeforeBuild">
+    <Target Name="Contentless" BeforeTargets="RunContentBuilder">
         <Exec Command="dotnet $(MSBuildThisFileDirectory)/../tools/Contentless.dll @(MonoGameContentReference) $(MSBuildProjectFullPath)" />
     </Target>
 </Project>
