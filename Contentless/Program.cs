@@ -19,7 +19,36 @@ public static class Program {
             return 1;
         }
 
-        var contentFile = new FileInfo(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, args[0])));
+        // find global packages folder and installed packages if we supplied a project file
+        string packagesFolder = null;
+        Dictionary<string, string> installedPackages = null;
+        if (args.Length >= 2) {
+            var projectPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, args[1]));
+            if (!File.Exists(projectPath) || Path.GetExtension(projectPath) != ".csproj") {
+                Console.Error.WriteLine($"Unable to find valid project file at {projectPath}");
+                return 1;
+            }
+
+            installedPackages = Program.ExtractPackagesFromProject(projectPath);
+            Console.WriteLine($"Found package dependencies {string.Join(", ", installedPackages.Select(kv => $"{kv.Key}@{kv.Value}"))} in project {projectPath}");
+
+            var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(projectPath));
+            packagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+            Console.WriteLine($"Using global packages folder {packagesFolder}");
+        }
+
+        // iterate all project files (semicolon-delimited) and process them
+        var contentFiles = args[0].Split(';').Select(p => Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, p.Trim()))).Distinct();
+        foreach (var file in contentFiles) {
+            var ret = Program.ProcessContentFile(new FileInfo(file), packagesFolder, installedPackages);
+            if (ret != 0)
+                return ret;
+        }
+
+        return 0;
+    }
+
+    private static int ProcessContentFile(FileInfo contentFile, string packagesFolder, Dictionary<string, string> installedPackages) {
         if (!contentFile.Exists || contentFile.Extension != ".mgcb") {
             Console.Error.WriteLine($"Unable to find valid content file at {contentFile}");
             return 1;
@@ -43,30 +72,14 @@ public static class Program {
         } else {
             Console.WriteLine("Using default config");
         }
-        var excluded = config.ExcludedFiles.Select(Program.MakeFileRegex).ToArray();
-        var overrides = Program.GetOverrides(config.Overrides).ToArray();
+        if (config.References.Length > 0 && packagesFolder == null)
+            Console.Error.WriteLine("The config file contains references, but no valid project data was found. Please specify the location of the project file you want to use for gathering references as the second argument.");
 
-        string packagesFolder = null;
-        var referencesVersions = config.References.ToDictionary(x => x, _ => (string) null, StringComparer.OrdinalIgnoreCase);
-        if (config.References.Length > 0) {
-            if (args.Length > 1) {
-                var csprojFullPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, args[1]));
-                if (!File.Exists(csprojFullPath) || Path.GetExtension(csprojFullPath) != ".csproj") {
-                    Console.Error.WriteLine($"Unable to find valid project file at {contentFile}");
-                    return 1;
-                }
-                Program.ExtractVersions(csprojFullPath, referencesVersions);
-                var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(csprojFullPath));
-                packagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
-            } else {
-                Console.Error.WriteLine("The config file contains references, but no project file was specified. Please specify the location of the content file you want to use for gathering references as the second argument.");
-            }
-        }
-
-        const string referenceHeader = "/reference:";
         var changed = false;
-        var referencesSyncs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        // load any references to be able to include custom content types as well
+
+        // load refereces and replace reference paths if they're mismatched
+        var referencesNotInContentFile = config.References.ToHashSet();
+        const string referenceHeader = "/reference:";
         for (var i = 0; i < content.Count; i++) {
             var line = content[i];
             if (!line.StartsWith(referenceHeader))
@@ -74,18 +87,21 @@ public static class Program {
             var reference = line[referenceHeader.Length..];
             var libraryName = Path.GetFileName(reference)[..^4];
 
-            if (referencesVersions.TryGetValue(libraryName, out var version) && version is not null) {
-                var fullLibraryPath = Program.CalculateFullPathToLibrary(packagesFolder, libraryName, version);
-                if (reference != fullLibraryPath) {
-                    Console.WriteLine($"Changing reference from {reference} to {fullLibraryPath}");
-                    reference = fullLibraryPath;
-                    content[i] = referenceHeader + fullLibraryPath;
-                    changed = true;
+            if (referencesNotInContentFile.Remove(libraryName)) {
+                if (installedPackages.TryGetValue(libraryName, out var version)) {
+                    var fullLibraryPath = Program.CalculateFullPathToLibrary(packagesFolder, libraryName, version);
+                    if (reference != fullLibraryPath) {
+                        Console.WriteLine($"Changing reference from {reference} to {fullLibraryPath}");
+                        reference = fullLibraryPath;
+                        content[i] = referenceHeader + fullLibraryPath;
+                        changed = true;
+                    } else {
+                        if (config.LogSkipped)
+                            Console.WriteLine($"Skipping reference replacement for {fullLibraryPath} which already matched");
+                    }
                 } else {
-                    if (config.LogSkipped)
-                        Console.WriteLine($"Skipping reference replacement for {fullLibraryPath} which already matched");
+                    Console.Error.WriteLine($"Unable to find existing reference {libraryName} in project file");
                 }
-                referencesSyncs.Add(libraryName);
             }
 
             var refPath = Path.GetFullPath(Path.Combine(contentFile.DirectoryName, reference));
@@ -93,37 +109,42 @@ public static class Program {
             Console.WriteLine($"Using reference {refPath}");
         }
 
-        // check references not in .mgcb now
-        var referencesLastIndex = 0;
-        // find place where I can add new reference
+        // find the line we want to start adding new references from
+        var lastReferenceLine = 0;
         for (var i = 0; i < content.Count; i++) {
             var line = content[i];
             if (line.StartsWith(referenceHeader)) {
-                referencesLastIndex = i + 1;
+                lastReferenceLine = i + 1;
             } else if (line.StartsWith("/importer:") || line.StartsWith("/processor:") || line.StartsWith("/build:") || line.Contains("-- Content --")) {
-                if (referencesLastIndex == 0)
-                    referencesLastIndex = i;
+                if (lastReferenceLine == 0)
+                    lastReferenceLine = i;
                 break;
             }
         }
-        foreach (var reference in referencesVersions)
-            if (!referencesSyncs.Contains(reference.Key) && reference.Value is not null) {
+        // add references that aren't in the content file yet
+        foreach (var reference in referencesNotInContentFile) {
+            if (installedPackages.TryGetValue(reference, out var version)) {
                 try {
-                    var path = Program.CalculateFullPathToLibrary(packagesFolder, reference.Key, reference.Value);
-                    content.Insert(referencesLastIndex++, referenceHeader + path);
+                    var path = Program.CalculateFullPathToLibrary(packagesFolder, reference, version);
+                    content.Insert(lastReferenceLine++, referenceHeader + path);
                     changed = true;
                     Program.SafeAssemblyLoad(path);
                     Console.WriteLine($"Adding reference {path}");
                 } catch (Exception e) {
-                    Console.Error.WriteLine($"Error adding reference {reference.Key} {e}");
+                    Console.Error.WriteLine($"Error adding reference {reference}: {e}");
                 }
+            } else {
+                Console.Error.WriteLine($"Unable to find configured reference {reference} in project file");
             }
+        }
 
         // load content importers
         var (importers, processors) = Program.GetContentData();
         Console.WriteLine($"Found possible importer types {string.Join(", ", importers)}");
         Console.WriteLine($"Found possible processor types {string.Join(", ", processors)}");
 
+        var excluded = config.ExcludedFiles.Select(Program.MakeFileRegex).ToArray();
+        var overrides = Program.GetOverrides(config.Overrides).ToArray();
         foreach (var file in contentFile.Directory.EnumerateFiles("*", SearchOption.AllDirectories)) {
             // is the file the content or config file?
             if (file.Name == contentFile.Name || file.Name == configFile.Name)
@@ -200,7 +221,7 @@ public static class Program {
             }
             Console.WriteLine("Wrote changes to content file");
         }
-        Console.Write("Done");
+        Console.WriteLine("Done");
         return 0;
     }
 
@@ -208,27 +229,20 @@ public static class Program {
         try {
             Assembly.LoadFrom(refPath);
         } catch (Exception e) {
-            Console.Error.WriteLine($"Error loading reference {refPath} {e}");
+            Console.Error.WriteLine($"Error loading reference {refPath}: {e}");
         }
     }
 
-    private static void ExtractVersions(string csprojPath, Dictionary<string, string> referencesVersions) {
-        Console.WriteLine($"Using project file {csprojPath}");
+    private static Dictionary<string, string> ExtractPackagesFromProject(string csprojPath) {
+        var ret = new Dictionary<string, string>();
         var projectRootElement = ProjectRootElement.Open(csprojPath);
         foreach (var property in projectRootElement.AllChildren.Where(x => x.ElementName == "PackageReference").Select(x => x as ProjectItemElement)) {
             var libraryName = property.Include;
             if (property.Children.FirstOrDefault(x => x.ElementName == "Version") is not ProjectMetadataElement versionElement)
                 continue;
-            var version = versionElement.Value;
-            if (referencesVersions.ContainsKey(libraryName)) {
-                referencesVersions[libraryName] = version;
-                Console.WriteLine($"Found reference {libraryName} {version} in project file");
-            }
+            ret.Add(libraryName, versionElement.Value);
         }
-
-        foreach (var library in referencesVersions)
-            if (library.Value is null)
-                Console.Error.WriteLine($"Unable to find reference {library.Key} in project file");
+        return ret;
     }
 
     private static string CalculateFullPathToLibrary(string packageFolder, string libraryName, string referencesVersion) {
