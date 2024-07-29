@@ -24,7 +24,7 @@ Contentless will now automatically add any content files from your `Content` dir
 If you want to change the way Contentless works, you can use a configuration file. To do so, simply create a file named `Contentless.json` in the same directory as your `Content.mgcb` file. You can use the config to change several options:
 ```json5
 {
-    // The list of files that should be excluded. Can use regex. 
+    // The list of files that should be excluded. Can use simple glob-style patterns including "*" and "?".
     // Default: ["obj/", "bin/"]
     "exclude": [
         "obj/",
@@ -33,10 +33,10 @@ If you want to change the way Contentless works, you can use a configuration fil
     // If any files that were skipped without errors should be logged (Files that already have entries or files that were ignored)
     // Default: true
     "logSkipped": true,
-    // The list of files that should use a different importer or processor than the one that Contentless automatically determined. Can use regex.
+    // The list of files that should use a different importer or processor than the one that Contentless automatically determined. Can use simple glob-style patterns including "*" and "?".
     // Default: {}
     "overrides": {
-        // Example: Make all files matching the regex ".json" use the importer "JsonImporter"
+        // Example: Make all files matching ".json" use the importer "JsonImporter"
         ".json": {
             "importer": "JsonImporter"
         },

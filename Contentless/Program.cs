@@ -143,7 +143,7 @@ public static class Program {
         Console.WriteLine($"Found possible importer types {string.Join(", ", importers)}");
         Console.WriteLine($"Found possible processor types {string.Join(", ", processors)}");
 
-        var excluded = config.ExcludedFiles.Select(Program.MakeFileRegex).ToArray();
+        var excluded = config.ExcludedFiles.Select(Program.GlobbyRegex).ToArray();
         var overrides = Program.GetOverrides(config.Overrides).ToArray();
         foreach (var file in contentFile.Directory.EnumerateFiles("*", SearchOption.AllDirectories)) {
             // is the file the content or config file?
@@ -271,7 +271,7 @@ public static class Program {
 
     private static IEnumerable<OverrideInfo> GetOverrides(Dictionary<string, Override> config) {
         foreach (var entry in config)
-            yield return new OverrideInfo(Program.MakeFileRegex(entry.Key), entry.Value);
+            yield return new OverrideInfo(Program.GlobbyRegex(entry.Key), entry.Value);
     }
 
     private static OverrideInfo GetOverrideFor(string file, IEnumerable<OverrideInfo> overrides) {
@@ -327,7 +327,7 @@ public static class Program {
         Console.WriteLine($"Adding file {relative} with the Copy build action");
     }
 
-    private static Regex MakeFileRegex(string s) {
+    private static Regex GlobbyRegex(string s) {
         return new Regex(s.Replace(".", "[.]").Replace("*", ".*").Replace("?", "."));
     }
 
