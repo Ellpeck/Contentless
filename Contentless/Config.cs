@@ -7,7 +7,7 @@ namespace Contentless;
 public class Config {
 
     [JsonProperty("exclude")]
-    public string[] ExcludedFiles = {"bin/", "obj/"};
+    public string[] ExcludedFiles = {"bin/*", "obj/*"};
 
     [JsonProperty("logSkipped")]
     public bool LogSkipped = true;

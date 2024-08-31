@@ -1,7 +1,7 @@
 {
     "exclude": [
-        "obj/",
-        "bin/",
+        "obj/*",
+        "bin/*",
         "Ex*.png",
         "Tiled/*.png"
     ],
