@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Enumeration;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using Microsoft.Build.Construction;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using Newtonsoft.Json;
@@ -143,7 +143,6 @@ public static class Program {
         Console.WriteLine($"Found possible importer types {string.Join(", ", importers)}");
         Console.WriteLine($"Found possible processor types {string.Join(", ", processors)}");
 
-        var excluded = config.ExcludedFiles.Select(Program.GlobbyRegex).ToArray();
         var overrides = Program.GetOverrides(config.Overrides).ToArray();
         foreach (var file in contentFile.Directory.EnumerateFiles("*", SearchOption.AllDirectories)) {
             // is the file the content or config file?
@@ -152,7 +151,7 @@ public static class Program {
             var relative = Path.GetRelativePath(contentFile.DirectoryName, file.FullName).Replace('\\', '/');
 
             // is the file in an excluded directory?
-            if (excluded.Any(e => e.IsMatch(relative))) {
+            if (config.ExcludedFiles.Any(e => FileSystemName.MatchesSimpleExpression(e, relative))) {
                 if (config.LogSkipped)
                     Console.WriteLine($"Skipping excluded file {relative}");
                 continue;
@@ -271,12 +270,12 @@ public static class Program {
 
     private static IEnumerable<OverrideInfo> GetOverrides(Dictionary<string, Override> config) {
         foreach (var entry in config)
-            yield return new OverrideInfo(Program.GlobbyRegex(entry.Key), entry.Value);
+            yield return new OverrideInfo(entry.Key, entry.Value);
     }
 
     private static OverrideInfo GetOverrideFor(string file, IEnumerable<OverrideInfo> overrides) {
         foreach (var over in overrides) {
-            if (over.Regex.IsMatch(file))
+            if (FileSystemName.MatchesSimpleExpression(over.Expression, file))
                 return over;
         }
         return null;
@@ -325,10 +324,6 @@ public static class Program {
         content.Add($"/copy:{relative}");
         content.Add("");
         Console.WriteLine($"Adding file {relative} with the Copy build action");
-    }
-
-    private static Regex GlobbyRegex(string s) {
-        return new Regex(s.Replace(".", "[.]").Replace("*", ".*").Replace("?", "."));
     }
 
 }

@@ -1,14 +1,12 @@
-using System.Text.RegularExpressions;
-
-namespace Contentless; 
+namespace Contentless;
 
 public class OverrideInfo {
 
-    public readonly Regex Regex;
+    public readonly string Expression;
     public readonly Override Override;
 
-    public OverrideInfo(Regex regex, Override over) {
-        this.Regex = regex;
+    public OverrideInfo(string expression, Override over) {
+        this.Expression = expression;
         this.Override = over;
     }
 
