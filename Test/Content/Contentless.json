@@ -2,7 +2,7 @@
     "exclude": [
         "obj/*",
         "bin/*",
-        "Ex*.png",
+        "*/Ex*.png",
         "Tiled/*.png"
     ],
     "logSkipped": true,
