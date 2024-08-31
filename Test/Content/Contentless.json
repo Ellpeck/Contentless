@@ -8,17 +8,17 @@
     "logSkipped": true,
     "references": ["MonoGame.Extended.Content.Pipeline"],
     "overrides": {
-        "Copy.*": {
+        "*/Copy.*": {
             "copy": true
         },
-        ".json": {
+        "*/*.json": {
             "copy": true
         },
-        ".ogg": {
+        "*/*.ogg": {
             "importer": "OggImporter",
             "processor": "SongProcessor"
         },
-        ".png": {
+        "*/*.png": {
             "processorParams": {
                 "TextureFormat": "NoChange"
             }

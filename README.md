@@ -26,10 +26,10 @@ If you want to change the way Contentless works, you can use a configuration fil
 {
     // The list of files that should be excluded. 
     // Can use simple glob-style patterns including "*" to match any number of any character, and "?" to match any single character.
-    // Default: ["obj/", "bin/"]
+    // Default: ["obj/*", "bin/*"]
     "exclude": [
-        "obj/",
-        "bin/"
+        "obj/*",
+        "bin/*"
     ],
     // If any files that were skipped without errors should be logged (Files that already have entries or files that were ignored)
     // Default: true
@@ -39,20 +39,20 @@ If you want to change the way Contentless works, you can use a configuration fil
     // Default: {}
     "overrides": {
         // Example: Make all files matching ".json" use the importer "JsonImporter"
-        ".json": {
+        "*/*.json": {
             "importer": "JsonImporter"
         },
         // Example: Specifying both an importer and a processor
-        ".ogg": {
+        "*/*.ogg": {
             "importer": "OggImporter",
             "processor": "SongProcessor"
         },
         // Example: Only specifying a processor
-        ".wav": {
+        "*/*.wav": {
             "processor": "SoundEffectProcessor"
         },
         // Example: Setting a file to the Copy build action
-        ".txt": {
+        "*/*.txt": {
             "copy": true
         },
         // Example: Adding processor parameters for files
