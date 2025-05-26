@@ -1,4 +1,4 @@
-![The Contentless logo](https://raw.githubusercontent.com/Ellpeck/Contentless/main/Logo.png)
+![The Contentless banner](https://raw.githubusercontent.com/Ellpeck/Contentless/main/Banner.png)
 
 **Contentless** is tool for MonoGame that automatically handles adding assets to the Content Pipeline project, so you don't have to use their interface to add every content file manually.
 
