@@ -306,7 +306,8 @@ public static class Program {
 
     private static bool HasEntry(IEnumerable<string> content, string relativeFile) {
         foreach (var line in content) {
-            if (line.StartsWith($"#begin {relativeFile}"))
+            var trimmed = line.Trim();
+            if (trimmed == $"#begin {relativeFile}" || trimmed == $"/build:{relativeFile}" || trimmed == $"/copy:{relativeFile}")
                 return true;
         }
         return false;
