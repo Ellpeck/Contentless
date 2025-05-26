@@ -255,7 +255,7 @@ public static class Program {
             try {
                 if (assembly.IsDynamic)
                     continue;
-                foreach (var type in assembly.GetExportedTypes()) {
+                foreach (var type in Program.GetTypes(assembly)) {
                     var importer = (ContentImporterAttribute) type.GetCustomAttribute(typeof(ContentImporterAttribute), true);
                     if (importer != null)
                         importers.Add(new ImporterInfo(importer, type));
@@ -268,6 +268,15 @@ public static class Program {
             }
         }
         return (importers, processors);
+    }
+
+    private static IEnumerable<Type> GetTypes(Assembly assembly) {
+        try {
+            return assembly.GetTypes();
+        } catch (ReflectionTypeLoadException e) {
+            // if we failed to load some types, still return the ones that were successful
+            return e.Types.Where(t => t != null);
+        }
     }
 
     private static IEnumerable<OverrideInfo> GetOverrides(Dictionary<string, Override> config) {
