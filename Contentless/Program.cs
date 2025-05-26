@@ -253,7 +253,9 @@ public static class Program {
         var processors = new List<string>();
         foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
             try {
-                foreach (var type in assembly.GetTypes()) {
+                if (assembly.IsDynamic)
+                    continue;
+                foreach (var type in assembly.GetExportedTypes()) {
                     var importer = (ContentImporterAttribute) type.GetCustomAttribute(typeof(ContentImporterAttribute), true);
                     if (importer != null)
                         importers.Add(new ImporterInfo(importer, type));
