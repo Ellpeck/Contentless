@@ -6,8 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="3.9.0-alpha0093" />
-        <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.1.303" />
+        <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="4.1.0" />
+        <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.3" />
     </ItemGroup>
 
     <ItemGroup>

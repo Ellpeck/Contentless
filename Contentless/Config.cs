@@ -16,7 +16,7 @@ public class Config {
     public Dictionary<string, Override> Overrides = new();
     
     [JsonProperty("references")] 
-    public string[] References = Array.Empty<string>();
+    public string[] References = [];
 }
 
 public class Override {
