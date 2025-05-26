@@ -66,6 +66,7 @@ However, if you want to change the way Contentless works, you can use a configur
     },
     // A set of content pipeline library references that should optionally be added to the content files. 
     // The paths of these references in the content file are automatically changed if they don't match the project's package references.
+    // References already present in the content file, but not included in this list, will still be used for resolving importers and processors, but their paths will not be changed.
     // Default: []
     "references": ["MonoGame.Extended.Content.Pipeline"]
 }

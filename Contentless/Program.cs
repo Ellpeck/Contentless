@@ -77,17 +77,18 @@ public static class Program {
 
         var changed = false;
 
-        // load refereces and replace reference paths if they're mismatched
-        var referencesNotInContentFile = config.References.ToHashSet();
+        // load references
+        var referencesToEdit = config.References.ToHashSet();
         const string referenceHeader = "/reference:";
         for (var i = 0; i < content.Count; i++) {
             var line = content[i];
             if (!line.StartsWith(referenceHeader))
                 continue;
             var reference = line[referenceHeader.Length..];
-            var libraryName = Path.GetFileName(reference)[..^4];
+            var libraryName = Path.GetFileNameWithoutExtension(reference);
 
-            if (referencesNotInContentFile.Remove(libraryName)) {
+            // replace mismatched reference paths if requested by the user
+            if (referencesToEdit.Remove(libraryName)) {
                 if (installedPackages.TryGetValue(libraryName, out var version)) {
                     var fullLibraryPath = Program.CalculateFullPathToLibrary(packagesFolder, libraryName, version);
                     if (reference != fullLibraryPath) {
@@ -109,32 +110,34 @@ public static class Program {
             Console.WriteLine($"Using reference {refPath}");
         }
 
-        // find the line we want to start adding new references from
-        var lastReferenceLine = 0;
-        for (var i = 0; i < content.Count; i++) {
-            var line = content[i];
-            if (line.StartsWith(referenceHeader)) {
-                lastReferenceLine = i + 1;
-            } else if (line.StartsWith("/importer:") || line.StartsWith("/processor:") || line.StartsWith("/build:") || line.Contains("-- Content --")) {
-                if (lastReferenceLine == 0)
-                    lastReferenceLine = i;
-                break;
-            }
-        }
-        // add references that aren't in the content file yet
-        foreach (var reference in referencesNotInContentFile) {
-            if (installedPackages.TryGetValue(reference, out var version)) {
-                try {
-                    var path = Program.CalculateFullPathToLibrary(packagesFolder, reference, version);
-                    content.Insert(lastReferenceLine++, referenceHeader + path);
-                    changed = true;
-                    Program.SafeAssemblyLoad(path);
-                    Console.WriteLine($"Adding reference {path}");
-                } catch (Exception e) {
-                    Console.Error.WriteLine($"Error adding reference {reference}: {e}");
+        if (referencesToEdit.Count > 0) {
+            // find the line we want to start adding new references from
+            var lastReferenceLine = 0;
+            for (var i = 0; i < content.Count; i++) {
+                var line = content[i];
+                if (line.StartsWith(referenceHeader)) {
+                    lastReferenceLine = i + 1;
+                } else if (line.StartsWith("/importer:") || line.StartsWith("/processor:") || line.StartsWith("/build:") || line.Contains("-- Content --")) {
+                    if (lastReferenceLine == 0)
+                        lastReferenceLine = i;
+                    break;
                 }
-            } else {
-                Console.Error.WriteLine($"Unable to find configured reference {reference} in project file");
+            }
+            // add references that aren't in the content file yet
+            foreach (var reference in referencesToEdit) {
+                if (installedPackages.TryGetValue(reference, out var version)) {
+                    try {
+                        var path = Program.CalculateFullPathToLibrary(packagesFolder, reference, version);
+                        content.Insert(lastReferenceLine++, referenceHeader + path);
+                        changed = true;
+                        Program.SafeAssemblyLoad(path);
+                        Console.WriteLine($"Adding reference {path}");
+                    } catch (Exception e) {
+                        Console.Error.WriteLine($"Error adding reference {reference}: {e}");
+                    }
+                } else {
+                    Console.Error.WriteLine($"Unable to find configured reference {reference} in project file");
+                }
             }
         }
 
@@ -245,7 +248,7 @@ public static class Program {
     }
 
     private static string CalculateFullPathToLibrary(string packageFolder, string libraryName, string referencesVersion) {
-        return Path.Combine(packageFolder, libraryName.ToLowerInvariant(), referencesVersion, "tools", libraryName + ".dll").Replace('\\', '/');
+        return Path.Combine(packageFolder, libraryName.ToLowerInvariant(), referencesVersion, "tools", $"{libraryName}.dll").Replace('\\', '/');
     }
 
     private static (List<ImporterInfo>, List<string>) GetContentData() {
