@@ -21,7 +21,9 @@ Next, you need to find the reference to your `Content.mgcb` file in your `.cspro
 Contentless will now automatically add any content files from your `Content` directory and subdirectories to your `Content.mgcb` file if they haven't already been added either manually or by Contentless. No existing items' configurations will be overridden, so you can still use the Content Pipeline tool to modify any settings as well.
 
 # Configuring
-If you want to change the way Contentless works, you can use a configuration file. To do so, simply create a file named `Contentless.json` in the same directory as your `Content.mgcb` file. You can use the config to change several options:
+By default, Contentless doesn't require any configuration and will work for most projects and content types out of the box.
+
+However, if you want to change the way Contentless works, you can use a configuration file. To do so, simply create a file named `Contentless.json` in the same directory as your `Content.mgcb` file. You can use the config to change several options:
 ```json5
 {
     // The list of files that should be excluded. 
