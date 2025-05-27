@@ -90,15 +90,19 @@ public static class Program {
             // replace mismatched reference paths if requested by the user
             if (referencesToEdit.Remove(libraryName)) {
                 if (installedPackages.TryGetValue(libraryName, out var version)) {
-                    var fullLibraryPath = Program.CalculateFullPathToLibrary(packagesFolder, libraryName, version);
-                    if (reference != fullLibraryPath) {
-                        Console.WriteLine($"Changing reference from {reference} to {fullLibraryPath}");
-                        reference = fullLibraryPath;
-                        content[i] = referenceHeader + fullLibraryPath;
-                        changed = true;
+                    var fullLibraryPath = Program.FindFullLibraryPath(packagesFolder, libraryName, version);
+                    if (fullLibraryPath != null) {
+                        if (reference != fullLibraryPath) {
+                            Console.WriteLine($"Changing reference from {reference} to {fullLibraryPath}");
+                            reference = fullLibraryPath;
+                            content[i] = referenceHeader + fullLibraryPath;
+                            changed = true;
+                        } else {
+                            if (config.LogSkipped)
+                                Console.WriteLine($"Skipping reference replacement for {fullLibraryPath} which already matched");
+                        }
                     } else {
-                        if (config.LogSkipped)
-                            Console.WriteLine($"Skipping reference replacement for {fullLibraryPath} which already matched");
+                        Console.Error.WriteLine($"Unable to find library {libraryName} in packages folder");
                     }
                 } else {
                     Console.Error.WriteLine($"Unable to find existing reference {libraryName} in project file");
@@ -106,8 +110,8 @@ public static class Program {
             }
 
             var refPath = Path.GetFullPath(Path.Combine(contentFile.DirectoryName, reference));
-            Program.SafeAssemblyLoad(refPath);
-            Console.WriteLine($"Using reference {refPath}");
+            if (Program.SafeAssemblyLoad(refPath))
+                Console.WriteLine($"Using reference {refPath}");
         }
 
         if (referencesToEdit.Count > 0) {
@@ -126,14 +130,14 @@ public static class Program {
             // add references that aren't in the content file yet
             foreach (var reference in referencesToEdit) {
                 if (installedPackages.TryGetValue(reference, out var version)) {
-                    try {
-                        var path = Program.CalculateFullPathToLibrary(packagesFolder, reference, version);
+                    var path = Program.FindFullLibraryPath(packagesFolder, reference, version);
+                    if (path != null) {
                         content.Insert(lastReferenceLine++, referenceHeader + path);
                         changed = true;
-                        Program.SafeAssemblyLoad(path);
-                        Console.WriteLine($"Adding reference {path}");
-                    } catch (Exception e) {
-                        Console.Error.WriteLine($"Error adding reference {reference}: {e}");
+                        if (Program.SafeAssemblyLoad(path))
+                            Console.WriteLine($"Adding reference {path}");
+                    } else {
+                        Console.Error.WriteLine($"Unable to find library {reference} in packages folder");
                     }
                 } else {
                     Console.Error.WriteLine($"Unable to find configured reference {reference} in project file");
@@ -227,11 +231,13 @@ public static class Program {
         return 0;
     }
 
-    private static void SafeAssemblyLoad(string refPath) {
+    private static bool SafeAssemblyLoad(string refPath) {
         try {
             Assembly.LoadFrom(refPath);
+            return true;
         } catch (Exception e) {
             Console.Error.WriteLine($"Error loading reference {refPath}: {e}");
+            return false;
         }
     }
 
@@ -247,8 +253,21 @@ public static class Program {
         return ret;
     }
 
-    private static string CalculateFullPathToLibrary(string packageFolder, string libraryName, string referencesVersion) {
-        return Path.Combine(packageFolder, libraryName.ToLowerInvariant(), referencesVersion, "tools", $"{libraryName}.dll").Replace('\\', '/');
+    private static string FindFullLibraryPath(string packageFolder, string libraryName, string version) {
+        // we try several paths, finally arriving at the least specific one (which is just any file with the dll name)
+        foreach (var dir in new[] {"tools", "lib/net*", "*"}) {
+            foreach (var name in new[] {libraryName.ToLowerInvariant(), libraryName}) {
+                var basePath = Path.Combine(packageFolder, name, version);
+                if (!Directory.Exists(basePath))
+                    continue;
+                foreach (var subdir in Directory.GetDirectories(basePath, dir, dir == "*" ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)) {
+                    var path = Path.Combine(subdir, $"{libraryName}.dll");
+                    if (File.Exists(path))
+                        return path.Replace('\\', '/');
+                }
+            }
+        }
+        return null;
     }
 
     private static (List<ImporterInfo>, List<string>) GetContentData() {

@@ -6,7 +6,7 @@
         "Tiled/*.png"
     ],
     "logSkipped": true,
-    "references": ["MonoGame.Extended.Content.Pipeline"],
+    "references": ["MonoGame.Extended.Content.Pipeline", "MonoGame.Aseprite.Content.Pipeline"],
     "overrides": {
         "*/Copy.*": {
             "copy": true

@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="4.1.0" />
+        <PackageReference Include="MonoGame.Aseprite.Content.Pipeline" Version="6.2.0" />
         <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.3" />
     </ItemGroup>
 
